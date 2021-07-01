@@ -16,8 +16,7 @@ let package = Package(
     targets: [
         .target(
             name: "pixivswift",
-            dependencies: ["SwiftyJSON", "Erik"],
-            exclude: ["Info.plist"]
+            dependencies: ["SwiftyJSON", "Erik"]
         )
     ]
 )
