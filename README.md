@@ -33,3 +33,7 @@ WIP, please have a look at pixivpy ^^'.
 ## Announcements
 I'll release a repo of an iOS/macOS app using this API in a few weeks.
 
+## Credits
+- [pixiv.net](https://pixiv.net) for their amazing platform
+- [upbit](https://github.com/upbit) for providing his work as opensource and essentially being the reason to dig further into programming and learning it
+- [Apple](https://github.com/apple) for creating a powerful language that is really nice to learn and use
