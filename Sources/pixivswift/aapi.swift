@@ -9,6 +9,9 @@
 import Foundation
 import SwiftyJSON
 
+/**
+ This class provides functions similiar to the ones used in the official Pixiv App.
+ */
 public class AppPixivAPI: BasePixivAPI {
     
     public override init() {
@@ -127,11 +130,11 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter req_true: whether the API is required to be authorized
      - returns: the user's bookmarks as a SwiftyJSON
      */
-    public func user_bookmarks_illust(user_id: Int, restrict: String = "public", filter: String = "for_ios", max_bookmark: Int? = nil, tag: String? = nil, req_true: Bool = true) throws -> JSON {
+    public func user_bookmarks_illust(user_id: Int, restrict: Publicity = .public, filter: String = "for_ios", max_bookmark: Int? = nil, tag: String? = nil, req_true: Bool = true) throws -> JSON {
         let url = "\(self.hosts)/v1/user/bookmarks/illust"
         var params = [
             "user_id": String(user_id),
-            "restrict": restrict,
+            "restrict": restrict.rawValue,
             "filter": filter
         ]
         if let max_bookmark = max_bookmark {
@@ -175,13 +178,13 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter req_auth: whether the API is required to be authorized
      - returns: a  SwiftyJSON with the newest content of the illustrations of the users you follow
      */
-    public func illust_follow(restrict: String = "public", offset: Int? = nil, req_auth: Bool = true) throws -> JSON{
+    public func illust_follow(restrict: Publicity = .public, offset: Int? = nil, req_auth: Bool = true) throws -> JSON{
         let url = "\(self.hosts)/v2/illust/follow"
         var params = [
-            "restrict": restrict
+            "restrict": restrict.rawValue
         ]
-        if offset != nil {
-            params["offset"] = String(offset!)
+        if let offset = offset {
+            params["offset"] = offset.description
         }
         
         let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
@@ -212,16 +215,16 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter req_auth: whether the API is required to be authorized
      - returns: the comments of the illustration as a SwiftyJSON
      */
-    public func illust_comments(illust_id: Int, offset:Int? = nil, include_total_comments: Bool? = nil, req_auth: Bool = true) throws -> JSON {
+    public func illust_comments(illust_id: Int, offset: Int? = nil, include_total_comments: Bool? = nil, req_auth: Bool = true) throws -> JSON {
         let url = "\(self.hosts)/v1/illust/comments"
         var params = [
             "illust_id": String(illust_id)
         ]
-        if offset != nil {
-            params["offset"] = String(offset!)
+        if let offset = offset {
+            params["offset"] = offset.description
         }
-        if include_total_comments != nil {
-            params["include_total_comments"] = String(include_total_comments!)
+        if let include_total_comments = include_total_comments {
+            params["include_total_comments"] = include_total_comments.description
         }
         
         let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
@@ -324,11 +327,11 @@ public class AppPixivAPI: BasePixivAPI {
             "filter": filter
         ]
         
-        if date != nil {
-            params["date"] = date!
+        if let date = date {
+            params["date"] = date
         }
-        if offset != nil {
-            params["offset"] = offset?.description
+        if let offset = offset {
+            params["offset"] = offset.description
         }
         
         let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
@@ -372,17 +375,17 @@ public class AppPixivAPI: BasePixivAPI {
             "sort": sort,
             "filter": filter
         ]
-        if start_date != nil {
-            params["start_date"] = start_date!
+        if let start_date = start_date {
+            params["start_date"] = start_date
         }
-        if end_date != nil {
-            params["end_date"] = end_date!
+        if let end_date = end_date {
+            params["end_date"] = end_date
         }
-        if duration != nil {
-            params["duration"] = duration!
+        if let duration = duration {
+            params["duration"] = duration
         }
-        if offset != nil {
-            params["offset"] = offset?.description
+        if let offset = offset {
+            params["offset"] = offset.description
         }
         
         let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
@@ -413,14 +416,14 @@ public class AppPixivAPI: BasePixivAPI {
             "sort": sort,
             "filter": filter!
         ]
-        if start_date != nil {
+        if let start_date = start_date {
             params["start_date"] = start_date
         }
-        if end_date != nil {
+        if let end_date = end_date {
             params["end_date"] = end_date
         }
-        if offset != nil {
-            params["offset"] = offset?.description
+        if let offset = offset {
+            params["offset"] = offset.description
         }
         
         let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
@@ -445,11 +448,11 @@ public class AppPixivAPI: BasePixivAPI {
             "filter": filter
         ]
         
-        if duration != nil {
+        if let duration = duration {
             params["duration"] = duration
         }
-        if offset != nil {
-            params["offset"] = offset?.description
+        if let offset = offset {
+            params["offset"] = offset.description
         }
         
         let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
@@ -480,11 +483,11 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter req_auth: whether the API is required to be authorized
      - returns: a SwiftyJSON
      */
-    public func illust_bookmark_add(illust_id: Int, restrict: String = "public", tags: Array<String>? = nil, req_auth: Bool = true) throws -> JSON {
+    public func illust_bookmark_add(illust_id: Int, restrict: Publicity = .public, tags: Array<String>? = nil, req_auth: Bool = true) throws -> JSON {
         let url = "\(self.hosts)/v2/illust/bookmark/add"
         var data = [
             "illust_id": illust_id.description,
-            "restrict": restrict
+            "restrict": restrict.rawValue
         ]
         if let tags = tags {
             if tags.count == 1 {
@@ -521,11 +524,11 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter req_auth: whether the API is required to be authorized
      - returns: a SwiftyJSON
      */
-    public func user_follow_add(user_id: Int, restrict: String = "public", req_auth: Bool = true) throws -> JSON {
+    public func user_follow_add(user_id: Int, restrict: Publicity = .public, req_auth: Bool = true) throws -> JSON {
         let url = "\(self.hosts)/v1/user/follow/add"
         let data = [
             "user_id": user_id.description,
-            "restrict": restrict
+            "restrict": restrict.rawValue
         ]
         
         let result = try self.no_auth_requests_call(method: "POST", url: url, data: data, req_auth: req_auth)
@@ -554,13 +557,13 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter req_auth: whether the API is required to be authorized
      - returns: a SwiftyJSON containing the tags
      */
-    public func user_bookmark_tags_illust(restrict: String = "public", offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
+    public func user_bookmark_tags_illust(restrict: Publicity = .public, offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
         let url = "\(self.hosts)/v1/user/bookmark-tags/illust"
         var params = [
-            "restrict": restrict
+            "restrict": restrict.rawValue
         ]
-        if offset != nil {
-            params["offset"] = offset?.description
+        if let offset = offset {
+            params["offset"] = offset.description
         }
         
         let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
@@ -575,14 +578,14 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter req_auth: whether the API is required to be authorized
      - returns: a SwiftyJSON containing the users
      */
-    public func user_following(user_id: Int, restrict: String = "public", offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
+    public func user_following(user_id: Int, restrict: Publicity = .public, offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
         let url = "\(self.hosts)/v1/user/following"
         var params = [
             "user_id": user_id.description,
-            "restrict": restrict
+            "restrict": restrict.rawValue
         ]
-        if offset != nil {
-            params["offset"] = offset?.description
+        if let offset = offset {
+            params["offset"] = offset.description
         }
         
         let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
@@ -603,8 +606,8 @@ public class AppPixivAPI: BasePixivAPI {
             "user_id": user_id.description,
             "filter": filter
         ]
-        if offset != nil {
-            params["offset"] = offset?.description
+        if let offset = offset {
+            params["offset"] = offset.description
         }
         
         let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
@@ -622,8 +625,8 @@ public class AppPixivAPI: BasePixivAPI {
         var params = [
             "user_id": user_id.description
         ]
-        if offset != nil {
-            params["offset"] = offset?.description
+        if let offset = offset {
+            params["offset"] = offset.description
         }
         
         let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
@@ -644,8 +647,8 @@ public class AppPixivAPI: BasePixivAPI {
             "user_id": user_id.description,
             "filter": filter
         ]
-        if offset != nil {
-            params["offset"] = offset?.description
+        if let offset = offset {
+            params["offset"] = offset.description
         }
         
         let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
@@ -682,8 +685,8 @@ public class AppPixivAPI: BasePixivAPI {
             "user_id": user_id.description,
             "filter": filter
         ]
-        if offset != nil {
-            params["offset"] = offset?.description
+        if let offset = offset {
+            params["offset"] = offset.description
         }
         
         let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
@@ -704,8 +707,8 @@ public class AppPixivAPI: BasePixivAPI {
             "series_id": series_id.description,
             "filter": filter
         ]
-        if last_order != nil {
-            params["last_oder"] = last_order!
+        if let last_order = last_order {
+            params["last_oder"] = last_order
         }
         
         let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)

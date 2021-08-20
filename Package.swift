@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "pixivswift",
     platforms: [
-        .macOS(.v10_15), .iOS(.v11)
+        .macOS(.v10_13), .iOS(.v11)
     ],
     products: [
         .library(name: "pixivswift", targets: ["pixivswift"])
