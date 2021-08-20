@@ -22,7 +22,17 @@ extension BasePixivAPI {
         code_verifier = code_verifier.replacingOccurrences(of: "+", with: "-")
         code_verifier = code_verifier.replacingOccurrences(of: "/", with: "_")
         
-        var code_challenge = Data(SHA256.hash(data: code_verifier.data(using: .ascii)!)).base64EncodedString()
+        var code_challenge: String = { () -> Data in
+            if #available(macOS 10.15, *) {
+                return Data(SHA256.hash(data: code_verifier.data(using: .ascii)!))
+            } else {
+                var hash = [UInt8](repeating: 0,  count: Int(CC_SHA256_DIGEST_LENGTH))
+                Data(code_verifier.utf8).withUnsafeBytes {
+                    _ = CC_SHA256($0.baseAddress, CC_LONG(Data(code_verifier.utf8).count), &hash)
+                }
+                return Data(hash)
+            }
+        }().base64EncodedString()
         code_challenge.removeLast()
         code_challenge = code_challenge.replacingOccurrences(of: "+", with: "-")
         code_challenge = code_challenge.replacingOccurrences(of: "/", with: "_")

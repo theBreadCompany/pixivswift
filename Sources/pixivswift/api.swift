@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  SwiftyPixiv
+//  pixivswift
 //
 //  Created by Fabio Mauersberger on 16.04.21.
 //  Original work written in Python by https://github.com/upbit.
@@ -43,59 +43,42 @@ public class BasePixivAPI {
         }
     }
     
+    /**
+     throw exception if there is access token
+     */
     public func require_auth() throws {
         if self.access_token.isEmpty {
             throw PixivError.AuthErrors.missingAuth("Authentication required! Call login() or set_auth() first!")
         }
     }
     
-    public func requests_call(method: String, url: String, headers: Dictionary<String, Any> = [:], params: Dictionary<String, Any> = [:], data: Dictionary<String, Any> = [:], stream: Bool = false) throws -> String {
+    public func requests_call(method: HttpMethod, url: URL, headers: Dictionary<String, Any> = [:], params: Dictionary<String, Any> = [:], data: Dictionary<String, Any> = [:], stream: Bool = false) throws -> String {
         var response: HTTPURLResponse = HTTPURLResponse()
         var response_data: String = ""
         
-        var _url = URLComponents(string: url)
+        var _url = URLComponents(url: url, resolvingAgainstBaseURL: false)
         _url?.queryItems = params.map { URLQueryItem(name: $0, value: ($1 as! String)) }
         var task = URLRequest(url: URL(string: _url!.string!)!)
         task.allHTTPHeaderFields = (headers as! [String:String])
+        task.httpMethod = method.rawValue
         
-        if method == "GET" {
-            //response = scraper.get(url: url, params: params as! [String:String], headers: headers as! [String:String], stream: stream)
-            let request = URLSession.shared.dataTask(with: task ) { data, _response, error in
-                guard let data = data, error == nil else { return }
-                response = _response as! HTTPURLResponse
-                response_data = String(data: data, encoding: .utf8)!
-            }
-            request.resume()
-        } else if method == "POST" {
-            task.httpMethod = method
+        if !data.isEmpty {
             var components = URLComponents()
             components.queryItems = data.map( {URLQueryItem(name: $0.key, value: ($0.value as! String))} )
             task.httpBody = components.url!.query!.data(using: .utf8)
-            let request = URLSession.shared.dataTask(with: task ) { data, _response, error in
-                guard let data = data, error == nil else { return }
-                response = _response as! HTTPURLResponse
-                response_data = String(data: data, encoding: .utf8)!
-            }
-            request.resume()
-        } else if method == "DELETE" {
-            task.httpMethod = method
-            var components = URLComponents()
-            components.queryItems = data.map( {URLQueryItem(name: $0.key, value: ($0.value as! String))} )
-            task.httpBody = components.url!.query!.data(using: .utf8)
-            let request = URLSession.shared.dataTask(with: task ) { data, _response, error in
-                guard let data = data, error == nil else { return }
-                response = _response as! HTTPURLResponse
-                response_data = String(data: data, encoding: .utf8)!
-            }
-            request.resume()
-        } else {
-            throw PixivError.badProgramming(misstake: "Unknown method: \(method)")
         }
+        
+        let _ = URLSession.shared.dataTask(with: task ) { data, _response, error in
+            guard let data = data, error == nil else { return }
+            response = _response as! HTTPURLResponse
+            response_data = String(data: data, encoding: .utf8)!
+        }.resume()
+        
         
         while response_data.isEmpty {
             continue
         }
-                
+        
         switch response.statusCode {
         case 200, 301, 302:
             break
@@ -139,12 +122,12 @@ public class BasePixivAPI {
             headers["host"] = "oauth.secure.pixiv.net"
         }
         
-        let url = "\(auth_hosts)/auth/token"
+        let url = URL(string: "\(auth_hosts)/auth/token")!
         var data = [
             "get_secure_url": 1.description,
             "client_id": self.client_id,
             "client_secret": self.client_secret,
-        ] as [String : String] 
+        ] as [String : String]
         
         let token: JSON
         
@@ -157,10 +140,10 @@ public class BasePixivAPI {
         } else if !refresh_token.isEmpty || !self.refresh_token.isEmpty {
             data["grant_type"] = "refresh_token"
             data["refresh_token"] = !refresh_token.isEmpty ? refresh_token: self.refresh_token
-
+            
             let r: String
             do {
-                r = try self.requests_call(method: "POST", url: url, headers: headers, data: data)
+                r = try self.requests_call(method: .POST, url: url, headers: headers, data: data)
             } catch PixivError.badProgramming /* 400 is generally a bad request, so a login error is a more specific version of that */ {
                 throw PixivError.AuthErrors.authFailed("auth() failed! check refresh_token.")
             }
@@ -173,14 +156,24 @@ public class BasePixivAPI {
         self.user_id = token["user"]["id"].intValue
         self.refresh_token = token["refresh_token"].stringValue
         return token
-        }
+    }
     
-    public func download(url: String, prefix: String = "", path:String = NSHomeDirectory(), name: String? = nil, replace: Bool = false, fname: String? = nil, referer: String = "https://app-api.pixiv.net") -> Bool{
+    /**
+     download an URL to the local storage
+     - Parameter url: URL of the file
+     - Parameter prefix: (optional) prefix for the filename
+     - Parameter path: path to the target directory
+     - Parameter name: (optional) new name for the file
+     - Parameter replace: replace if already existing
+     - Parameter referer: a referer the URLRequest should refer to, default is recommended
+     - returns: whether the download succeeded
+     */
+    public func download(url: URL, prefix: String = "", path: URL = URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true), name: String? = nil, replace: Bool = false, referer: URL = URL(string: "https://app-api.pixiv.net")!) -> Bool{
         var _name = ""
-        if fname == nil && name == nil {
-            _name = url.split(separator: "/").last!.description
-        } else if fname != nil {
-            _name = fname!
+        if let name = name {
+            _name = name
+        } else {
+            _name = url.absoluteString.split(separator: "/").last!.description
         }
         
         var img_path = ""
@@ -192,8 +185,8 @@ public class BasePixivAPI {
                 return true
             }
             
-            var task = URLRequest(url: URL(string: url)!)
-            task.addValue(referer, forHTTPHeaderField: "referer")
+            var task = URLRequest(url: url)
+            task.allHTTPHeaderFields = ["Referer": referer.absoluteString]
             var error_occured = false
             let _ = URLSession.shared.dataTask(with: task) { data, response, error in
                 guard let data = data, error == nil else { return }

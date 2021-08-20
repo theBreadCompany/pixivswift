@@ -1,6 +1,6 @@
 //
 //  aapi.swift
-//  SwiftyPixiv
+//  pixivswift
 //
 //  Created by Fabio Mauersberger on 16.04.21.
 //  Original work written in Python by https://github.com/upbit.
@@ -19,7 +19,7 @@ public class AppPixivAPI: BasePixivAPI {
         self.hosts = "https://app-api.pixiv.net"
     }
     
-    private func no_auth_requests_call(method: String, url: String, headers: Dictionary<String, String> = [:], params: Dictionary<String, String> = [:], data: Dictionary<String, String> = [:], req_auth: Bool = true) throws -> String {
+    private func no_auth_requests_call(method: HttpMethod, url: URL, headers: Dictionary<String, String> = [:], params: Dictionary<String, String> = [:], data: Dictionary<String, String> = [:], req_auth: Bool = true) throws -> String {
         var _headers = headers
         if self.hosts != "https://app-api.pixiv.net" {
             _headers["host"] = "app-api.pixiv.net"
@@ -80,13 +80,13 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: the user's information as a SwiftyJSON
      */
     public func user_detail(user_id: Int, filter: String = "for_ios", req_auth: Bool = true) throws -> JSON{
-        let url = "\(self.hosts)/v1/user/detail"
+        let url = URL(string: "\(self.hosts)/v1/user/detail")!
         let params = [
             "user_id": String(user_id),
             "filter": filter
         ]
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params)
         return self.parse_result(req: result)
     }
     
@@ -103,7 +103,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: the user's content as a SwiftyJSON
      */
     public func user_illusts(user_id: Int, type: String = "illust", filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> JSON{
-        let url = "\(self.hosts)/v1/user/illusts"
+        let url = URL(string: "\(self.hosts)/v1/user/illusts")!
         var params = [
             "user_id": String(user_id),
             "filter": filter
@@ -115,7 +115,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["offset"] = String(offset)
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -131,7 +131,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: the user's bookmarks as a SwiftyJSON
      */
     public func user_bookmarks_illust(user_id: Int, restrict: Publicity = .public, filter: String = "for_ios", max_bookmark: Int? = nil, tag: String? = nil, req_true: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/user/bookmarks/illust"
+        let url = URL(string: "\(self.hosts)/v1/user/bookmarks/illust")!
         var params = [
             "user_id": String(user_id),
             "restrict": restrict.rawValue,
@@ -144,7 +144,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["tag"] = tag
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_true)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_true)
         return self.parse_result(req: result)
     }
     
@@ -158,13 +158,13 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON with related users to the given ID
      */
     public func user_related(seed_user_id: Int, filter: String = "for_ios", offset: Int = 0, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/user/related"
+        let url = URL(string: "\(self.hosts)/v1/user/related")!
         let params = [
             "filter": filter,
             "offset": offset.description,
             "seed_user_id": seed_user_id.description
         ]
-        let r = try no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let r = try no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         var parsed_r = self.parse_result(req: r)
         parsed_r["next_url"] = JSON("\(self.hosts)/v1/user/related?filter=" + params["filter"]! + "&offset=\(Int(params["offset"]!)!+30)&seed_user_id=" + params["seed_user_id"]!)
         return parsed_r
@@ -179,7 +179,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a  SwiftyJSON with the newest content of the illustrations of the users you follow
      */
     public func illust_follow(restrict: Publicity = .public, offset: Int? = nil, req_auth: Bool = true) throws -> JSON{
-        let url = "\(self.hosts)/v2/illust/follow"
+        let url = URL(string: "\(self.hosts)/v2/illust/follow")!
         var params = [
             "restrict": restrict.rawValue
         ]
@@ -187,7 +187,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["offset"] = offset.description
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -198,12 +198,12 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON with the requested details
      */
     public func illust_detail(illust_id: Int, req_auth: Bool = true) throws -> JSON{
-        let url = "\(self.hosts)/v1/illust/detail"
+        let url = URL(string: "\(self.hosts)/v1/illust/detail")!
         let params = [
             "illust_id": String(illust_id)
         ]
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -216,7 +216,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: the comments of the illustration as a SwiftyJSON
      */
     public func illust_comments(illust_id: Int, offset: Int? = nil, include_total_comments: Bool? = nil, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/illust/comments"
+        let url = URL(string: "\(self.hosts)/v1/illust/comments")!
         var params = [
             "illust_id": String(illust_id)
         ]
@@ -227,7 +227,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["include_total_comments"] = include_total_comments.description
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -241,7 +241,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON with similiar illustrations
      */
     public func illust_related(illust_id: Int, filter: String = "for_ios", seed_illust_ids: Array<Int>? = nil, offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v2/illust/related"
+        let url = URL(string: "\(self.hosts)/v2/illust/related")!
         var params = [
             "illust_id": String(illust_id),
             "filter": filter,
@@ -251,7 +251,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["seed_illust_ids[]"] = seed_illust_ids.description
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -270,11 +270,11 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON with recommendations for the user
      */
     public func illust_recommended(content_type: String = "illust", include_ranking_label: Bool = true, filter: String = "for_ios", max_bookmark_id_for_recommend: Int? = nil, min_bookmark_id_for_recent_illust: Int? = nil, offset: Int? = nil, include_ranking_illusts: Bool? = nil, bookmark_illust_ids: Array<String>? = nil, include_privacy_policy: Bool? = nil, req_auth: Bool = true) throws -> JSON{
-        let url: String
+        let url: URL
         if req_auth {
-            url = "\(self.hosts)/v1/illust/recommended"
+            url = URL(string: "\(self.hosts)/v1/illust/recommended")!
         } else {
-            url = "\(self.hosts)/v1/illust/recommended-nologin"
+            url = URL(string: "\(self.hosts)/v1/illust/recommended-nologin")!
         }
         var params = [
             "content_type": content_type,
@@ -308,7 +308,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["include_privacy_policy"] = include_privacy_policy?.description
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -321,7 +321,7 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter req_auth: whether the API is required to be authorized
      */
     public func illust_ranking(mode: String = "day", filter: String = "for_ios", date: String? = nil, offset: Int? = nil, req_auth: Bool = true) throws -> JSON{
-        let url = "\(self.hosts)/v1/illust/ranking"
+        let url = URL(string: "\(self.hosts)/v1/illust/ranking")!
         var params = [
             "mode": mode,
             "filter": filter
@@ -334,7 +334,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["offset"] = offset.description
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return parse_result(req: result)
     }
     
@@ -345,12 +345,12 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON with the currently trending tags
      */
     public func trending_tags_illust(filter: String = "for_ios", req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/trending-tags/illust"
+        let url = URL(string: "\(self.hosts)/v1/trending-tags/illust")!
         let params = [
             "filter": filter
         ]
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -368,7 +368,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON with search results
      */
     public func search_illust(word: String, search_target: String = "partial_match_for_tags", sort: String = "date_desc", duration: String? = nil, start_date: String? = nil, end_date: String? = nil, filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/search/illust"
+        let url = URL(string: "\(self.hosts)/v1/search/illust")!
         var params = [
             "word": word,
             "search_target": search_target,
@@ -388,7 +388,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["offset"] = offset.description
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -407,7 +407,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON with search results
      */
     public func search_novel(word: String, search_target: String = "partial_match_for_tags", sort: String = "date_desc", merge_plain_keyword_results: Bool = true, include_translated_tag_results: Bool = true, start_date: String? = nil, end_date: String? = nil, filter: String? = nil, offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/search/novel"
+        let url = URL(string: "\(self.hosts)/v1/search/novel")!
         var params = [
             "word": word,
             "search_targets": search_target,
@@ -426,7 +426,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["offset"] = offset.description
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -441,7 +441,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON containing potential search results
      */
     public func search_user(word: String, sort: String = "date_desc", duration: String? = nil, filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/search/user"
+        let url = URL(string: "\(self.hosts)/v1/search/user")!
         var params = [
             "word": word,
             "sort": sort,
@@ -455,7 +455,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["offset"] = offset.description
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -466,12 +466,12 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON containing the details
      */
     public func illust_bookmark_detail(illust_id: Int, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v2/illust/bookmark/detail"
+        let url = URL(string: "\(self.hosts)/v2/illust/bookmark/detail")!
         let params = [
             "illust_id": illust_id.description
         ]
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -484,7 +484,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON
      */
     public func illust_bookmark_add(illust_id: Int, restrict: Publicity = .public, tags: Array<String>? = nil, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v2/illust/bookmark/add"
+        let url = URL(string: "\(self.hosts)/v2/illust/bookmark/add")!
         var data = [
             "illust_id": illust_id.description,
             "restrict": restrict.rawValue
@@ -497,7 +497,7 @@ public class AppPixivAPI: BasePixivAPI {
             }
         }
         
-        let result = try self.no_auth_requests_call(method: "POST", url: url, data: data, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .POST, url: url, data: data, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -508,12 +508,12 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON
      */
     public func illust_bookmark_delete(illust_id: Int, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/illust/bookmark/delete"
+        let url = URL(string: "\(self.hosts)/v1/illust/bookmark/delete")!
         let data = [
             "illust_id": illust_id.description
         ]
         
-        let result = try self.no_auth_requests_call(method: "POST", url: url, data: data, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .POST, url: url, data: data, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -525,13 +525,13 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON
      */
     public func user_follow_add(user_id: Int, restrict: Publicity = .public, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/user/follow/add"
+        let url = URL(string: "\(self.hosts)/v1/user/follow/add")!
         let data = [
             "user_id": user_id.description,
             "restrict": restrict.rawValue
         ]
         
-        let result = try self.no_auth_requests_call(method: "POST", url: url, data: data, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .POST, url: url, data: data, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     /**
@@ -541,12 +541,12 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON
      */
     public func user_follow_delete(user_id: Int, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/user/follow/delete"
+        let url = URL(string: "\(self.hosts)/v1/user/follow/delete")!
         let data = [
             "user_id": user_id.description
         ]
         
-        let result = try self.no_auth_requests_call(method: "POST", url: url, data: data, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .POST, url: url, data: data, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -558,7 +558,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON containing the tags
      */
     public func user_bookmark_tags_illust(restrict: Publicity = .public, offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/user/bookmark-tags/illust"
+        let url = URL(string: "\(self.hosts)/v1/user/bookmark-tags/illust")!
         var params = [
             "restrict": restrict.rawValue
         ]
@@ -566,7 +566,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["offset"] = offset.description
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -579,7 +579,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON containing the users
      */
     public func user_following(user_id: Int, restrict: Publicity = .public, offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/user/following"
+        let url = URL(string: "\(self.hosts)/v1/user/following")!
         var params = [
             "user_id": user_id.description,
             "restrict": restrict.rawValue
@@ -588,7 +588,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["offset"] = offset.description
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -601,7 +601,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON containing the users
      */
     public func user_follow(user_id: Int, filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/user/follower"
+        let url = URL(string: "\(self.hosts)/v1/user/follower")!
         var params = [
             "user_id": user_id.description,
             "filter": filter
@@ -610,7 +610,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["offset"] = offset.description
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -621,7 +621,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON containing the user's mypixiv content
      */
     public func user_mypixiv(user_id: Int, offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/user/mypixiv"
+        let url = URL(string: "\(self.hosts)/v1/user/mypixiv")!
         var params = [
             "user_id": user_id.description
         ]
@@ -629,7 +629,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["offset"] = offset.description
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -642,7 +642,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON containing the users
      */
     public func user_list(user_id: Int, filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v2/user/list"
+        let url = URL(string: "\(self.hosts)/v2/user/list")!
         var params = [
             "user_id": user_id.description,
             "filter": filter
@@ -651,7 +651,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["offset"] = offset.description
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -662,12 +662,12 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON containing the ugoiras metadata
      */
     public func ugoira_metadata(illust_id: Int, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/ugoira/metadata"
+        let url = URL(string: "\(self.hosts)/v1/ugoira/metadata")!
         let params = [
             "illust_id": illust_id.description
         ]
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -680,7 +680,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON containing the user's novels
      */
     public func user_novels(user_id: Int, filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/user/novels"
+        let url = URL(string: "\(self.hosts)/v1/user/novels")!
         var params = [
             "user_id": user_id.description,
             "filter": filter
@@ -689,7 +689,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["offset"] = offset.description
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -702,7 +702,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON containing the series
      */
     public func novel_series(series_id: Int, filter: String = "for_ios", last_order: String? = nil, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v2/novel/series"
+        let url = URL(string: "\(self.hosts)/v2/novel/series")!
         var params = [
             "series_id": series_id.description,
             "filter": filter
@@ -711,7 +711,7 @@ public class AppPixivAPI: BasePixivAPI {
             params["last_oder"] = last_order
         }
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -722,12 +722,12 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON containing the novel details
      */
     public func novel_details(novel_id: Int, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v2/novel/detail"
+        let url = URL(string: "\(self.hosts)/v2/novel/detail")!
         let params = [
             "novel_id": novel_id.description
         ]
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -738,12 +738,12 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON containing the novel text
      */
     public func novel_text(novel_id: Int, req_auth: Bool = true) throws -> JSON {
-        let url = "\(self.hosts)/v1/novel/text"
+        let url = URL(string: "\(self.hosts)/v1/novel/text")!
         let params = [
             "novel_id": novel_id.description
         ]
         
-        let result = try self.no_auth_requests_call(method: "GET", url: url, params: params, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
     }
     
@@ -753,7 +753,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a SwiftyJSON containing the showcase
      */
     public func showcase_article(showcase_id: Int) throws -> JSON {
-        let url = "https://www.pixiv.net/ajax/showcase/article"
+        let url = URL(string: "https://www.pixiv.net/ajax/showcase/article")!
         let headers = [
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36",
             "Referer": "https://www.pixiv.net"
@@ -761,7 +761,7 @@ public class AppPixivAPI: BasePixivAPI {
         let params = [
             "article-id": showcase_id.description
         ]
-        let result = try self.no_auth_requests_call(method: "GET", url: url, headers: headers, params: params, req_auth: false)
+        let result = try self.no_auth_requests_call(method: .GET, url: url, headers: headers, params: params, req_auth: false)
         return self.parse_result(req: result)
     }
 }
