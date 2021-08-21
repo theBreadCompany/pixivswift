@@ -371,8 +371,8 @@ public class AppPixivAPI: BasePixivAPI {
         let url = URL(string: "\(self.hosts)/v1/search/illust")!
         var params = [
             "word": word,
-            "search_target": search_target,
-            "sort": sort,
+            "search_target": search_target.rawValue,
+            "sort": sort.rawValue,
             "filter": filter
         ]
         if let start_date = start_date {
@@ -413,7 +413,7 @@ public class AppPixivAPI: BasePixivAPI {
             "search_targets": search_target.rawValue,
             "merge_plain_keyword_results": merge_plain_keyword_results.description,
             "include_translated_tag_results": include_translated_tag_results.description,
-            "sort": sort,
+            "sort": sort.rawValue,
             "filter": filter!
         ]
         if let start_date = start_date {
