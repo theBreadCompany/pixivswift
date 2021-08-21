@@ -29,7 +29,7 @@ public class PixivAPI: BasePixivAPI {
         let result = self.parse_json(json: req.description)
         return result
     }
-    
+    /* dead
     /**
      fetch the bad words
      - returns: a SwiftyJSON containing the bad words
@@ -39,6 +39,7 @@ public class PixivAPI: BasePixivAPI {
         let result = try self.auth_requests_call(method: .GET, url: url)
         return self.parse_result(req: result)
     }
+     */
     
     /**
      fetch a wotk
@@ -270,7 +271,7 @@ public class PixivAPI: BasePixivAPI {
      - Parameter include_sanity_level: whether to include the sanity level
      - returns: a SwiftyJSON containing the works
      */
-    public func ranking(ranking_type: String = "all", mode: String = "daily", page: Int = 1, per_page: Int = 50, date: String? = nil, image_sizes: Array<ImageSizes> = ImageSizes.allCases, profile_image_sizes: Array<ProfileImageSizes> = ProfileImageSizes.allCases, include_stats: Bool = true, include_sanity_level: Bool = true) throws -> JSON {
+    public func ranking(ranking_type: String = "all", mode: String = "daily", page: Int = 1, per_page: Int = 50, date: Date? = nil, image_sizes: Array<ImageSizes> = ImageSizes.allCases, profile_image_sizes: Array<ProfileImageSizes> = ProfileImageSizes.allCases, include_stats: Bool = true, include_sanity_level: Bool = true) throws -> JSON {
         let url = URL(string: "https://public-api.secure.pixiv.net/v1/ranking/\(ranking_type).json")!
         var params = [
             "mode": mode,
@@ -282,7 +283,7 @@ public class PixivAPI: BasePixivAPI {
             "profile_iomage_sizes": profile_image_sizes.map{$0.rawValue}.joined(separator: ",")
         ]
         if let date = date {
-            params["date"] = date
+            params["date"] = self.parse_date(date)
         }
         
         let result = try self.auth_requests_call(method: .GET, url: url, params: params)
@@ -301,7 +302,7 @@ public class PixivAPI: BasePixivAPI {
      - Parameter include_sanity_level: whether to include the sanity level
      - returns: a SwiftyJSON containing the works
      */
-    public func ranking_all(ranking_type: String = "all", mode: String = "daily", page: Int = 1, per_page: Int = 50, date: String? = nil, image_sizes: Array<ImageSizes> = ImageSizes.allCases, profile_image_sizes: Array<ProfileImageSizes> = ProfileImageSizes.allCases, include_stats: Bool = true, include_sanity_level: Bool = true) throws -> JSON{
+    public func ranking_all(ranking_type: String = "all", mode: String = "daily", page: Int = 1, per_page: Int = 50, date: Date? = nil, image_sizes: Array<ImageSizes> = ImageSizes.allCases, profile_image_sizes: Array<ProfileImageSizes> = ProfileImageSizes.allCases, include_stats: Bool = true, include_sanity_level: Bool = true) throws -> JSON{
         return try self.ranking(ranking_type: "all", mode: mode, page: page, per_page: per_page, date: date,
                                 image_sizes: image_sizes, profile_image_sizes: profile_image_sizes,
                                 include_stats: include_stats, include_sanity_level: include_sanity_level)

@@ -320,7 +320,7 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter offset: (optional) offset of the requested illustrations
      - Parameter req_auth: whether the API is required to be authorized
      */
-    public func illust_ranking(mode: String = "day", filter: String = "for_ios", date: String? = nil, offset: Int? = nil, req_auth: Bool = true) throws -> JSON{
+    public func illust_ranking(mode: String = "day", filter: String = "for_ios", date: Date? = nil, offset: Int? = nil, req_auth: Bool = true) throws -> JSON{
         let url = URL(string: "\(self.hosts)/v1/illust/ranking")!
         var params = [
             "mode": mode,
@@ -328,7 +328,7 @@ public class AppPixivAPI: BasePixivAPI {
         ]
         
         if let date = date {
-            params["date"] = date
+            params["date"] = self.parse_date(date)
         }
         if let offset = offset {
             params["offset"] = offset.description
@@ -367,7 +367,7 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter req_auth: whether the API is required to be authorized
      - returns: a SwiftyJSON with search results
      */
-    public func search_illust(word: String, search_target: String = "partial_match_for_tags", sort: String = "date_desc", duration: String? = nil, start_date: String? = nil, end_date: String? = nil, filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
+    public func search_illust(word: String, search_target: SearchMode = .partial_match_for_tags, sort: SortMode = .date_desc, duration: Duration? = nil, start_date: Date? = nil, end_date: Date? = nil, filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
         let url = URL(string: "\(self.hosts)/v1/search/illust")!
         var params = [
             "word": word,
@@ -376,13 +376,13 @@ public class AppPixivAPI: BasePixivAPI {
             "filter": filter
         ]
         if let start_date = start_date {
-            params["start_date"] = start_date
+            params["start_date"] = self.parse_date(start_date)
         }
         if let end_date = end_date {
-            params["end_date"] = end_date
+            params["end_date"] = self.parse_date(end_date)
         }
         if let duration = duration {
-            params["duration"] = duration
+            params["duration"] = duration.rawValue
         }
         if let offset = offset {
             params["offset"] = offset.description
@@ -406,21 +406,21 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter req_auth: whether the API is required to be authorized
      - returns: a SwiftyJSON with search results
      */
-    public func search_novel(word: String, search_target: String = "partial_match_for_tags", sort: String = "date_desc", merge_plain_keyword_results: Bool = true, include_translated_tag_results: Bool = true, start_date: String? = nil, end_date: String? = nil, filter: String? = nil, offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
+    public func search_novel(word: String, search_target: SearchMode = .partial_match_for_tags, sort: SortMode = .date_desc, merge_plain_keyword_results: Bool = true, include_translated_tag_results: Bool = true, start_date: Date? = nil, end_date: Date? = nil, filter: String? = nil, offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
         let url = URL(string: "\(self.hosts)/v1/search/novel")!
         var params = [
             "word": word,
-            "search_targets": search_target,
+            "search_targets": search_target.rawValue,
             "merge_plain_keyword_results": merge_plain_keyword_results.description,
             "include_translated_tag_results": include_translated_tag_results.description,
             "sort": sort,
             "filter": filter!
         ]
         if let start_date = start_date {
-            params["start_date"] = start_date
+            params["start_date"] = self.parse_date(start_date)
         }
         if let end_date = end_date {
-            params["end_date"] = end_date
+            params["end_date"] = self.parse_date(end_date)
         }
         if let offset = offset {
             params["offset"] = offset.description
@@ -440,16 +440,16 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter req_auth: whether the API is required to be authorized
      - returns: a SwiftyJSON containing potential search results
      */
-    public func search_user(word: String, sort: String = "date_desc", duration: String? = nil, filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
+    public func search_user(word: String, sort: SortMode = .date_desc, duration: Duration? = nil, filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> JSON {
         let url = URL(string: "\(self.hosts)/v1/search/user")!
         var params = [
             "word": word,
-            "sort": sort,
+            "sort": sort.rawValue,
             "filter": filter
         ]
         
         if let duration = duration {
-            params["duration"] = duration
+            params["duration"] = duration.rawValue
         }
         if let offset = offset {
             params["offset"] = offset.description
@@ -766,3 +766,17 @@ public class AppPixivAPI: BasePixivAPI {
     }
 }
 
+extension AppPixivAPI {
+    
+    public enum SortMode: String {
+        case date_asc, date_desc, popular_desc
+    }
+    
+    public enum SearchMode: String {
+        case partial_match_for_tags, exact_match_for_tags, title_and_caption
+    }
+    
+    public enum Duration: String {
+        case within_last_day, within_last_week, within_last_month
+    }
+}

@@ -43,6 +43,12 @@ public class BasePixivAPI {
         }
     }
     
+    public func parse_date(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "YYYY-MM-dd"
+        return formatter.string(from: date)
+    }
+    
     /**
      throw exception if there is access token
      */
