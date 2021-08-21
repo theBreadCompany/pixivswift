@@ -24,7 +24,7 @@ extension BasePixivAPI {
         code_verifier = code_verifier.replacingOccurrences(of: "/", with: "_")
         
         var code_challenge: String = { () -> Data in
-            if #available(macOS 10.15, *) {
+            if #available(macOS 10.15, iOS 13, *) {
                 return Data(SHA256.hash(data: code_verifier.data(using: .ascii)!))
             } else {
                 var hash = [UInt8](repeating: 0,  count: Int(CC_SHA256_DIGEST_LENGTH))
