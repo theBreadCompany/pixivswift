@@ -5,6 +5,7 @@
 //  Created by Fabio Mauersberger on 01.07.21.
 //
 
+#if canImport(Erik)
 import Erik
 import WebKit
 import CryptoKit
@@ -146,3 +147,4 @@ extension BasePixivAPI {
         }
     }
 }
+#endif
