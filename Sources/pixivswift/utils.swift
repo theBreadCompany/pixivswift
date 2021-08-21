@@ -31,7 +31,7 @@ public enum HttpMethod: String {
 
 extension String {
     var MD5: String {
-        if #available(macOS 10.15, *) {
+        if #available(macOS 10.15,iOS 13, *) {
         let computed = Insecure.MD5.hash(data: self.data(using: .utf8)!)
         return computed.map { String(format: "%02hhx", $0) }.joined()
         } else {
