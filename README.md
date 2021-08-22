@@ -13,6 +13,12 @@ Also, please do not overuse this. Pixiv has no financial benefit from this, and 
 - Access to both the public API and the API used by the Pixiv app
 - Directly download images (although ugoiras require further handling, more on that will follow)
 
+## Installation
+
+### Swift Package Manager
+- simply add https://github.com/theBreadCompany/pixivswift.git to Xcode or
+- add `.package(url: "https://github.com/theBreadCompany/pixivswift.git", .branch("master"))` to your Package.swift dependencies
+
 ## Documentation
 
 It's basicaly the same usage like [upbit's pixivpy](https://github.com/upbit/pixivpy): This API is synchronous, meaning that we wait for every single request to be completed. 
@@ -35,5 +41,5 @@ I'll release a repo of an iOS/macOS app using this API in a few weeks.
 
 ## Credits
 - [pixiv.net](https://pixiv.net) for their amazing platform
-- [upbit](https://github.com/upbit) for providing his work as opensource and essentially being the reason to dig further into programming and learning it
+- [upbit](https://github.com/upbit) for providing his work as opensource 
 - [Apple](https://github.com/apple) for creating a powerful language that is really nice to learn and use
