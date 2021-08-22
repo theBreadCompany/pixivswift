@@ -78,7 +78,7 @@ extension BasePixivAPI {
         
         var code = ""
         
-        var _ = web.observe(\.url, options: .new) {webView, change in
+        var _ = web.observe(\.url, options: .new) {_, change in
             if let value = change.newValue {
                 if let value = value {
                     if value.scheme == "pixiv" {
@@ -108,7 +108,7 @@ extension BasePixivAPI {
         
         var response = ""
         
-        var error: Error? = nil
+        var error = false
         
         erik.visit(url: url) { document, _ in
             guard let document = document else { return }
@@ -128,7 +128,7 @@ extension BasePixivAPI {
                 document.querySelectorAll("button[type=\"submit\"]")[1].click {doc,_ in
                     
                     if (doc as! Document).toHTML!.contains("Please check") {
-                        error = PixivError.AuthErrors.authFailed("Wrong PixivID/username or password!")
+                        error = true
                     }
                     
                     while code.isEmpty {
@@ -140,8 +140,8 @@ extension BasePixivAPI {
                 }
             }
         }
-        if let error = error {
-            throw error
+        if error {
+            throw PixivError.AuthErrors.authFailed("Wrong PixivID/username or password!")
         } else {
             return response
         }

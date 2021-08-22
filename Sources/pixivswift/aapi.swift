@@ -24,7 +24,7 @@ public class AppPixivAPI: BasePixivAPI {
         if self.hosts != "https://app-api.pixiv.net" {
             _headers["host"] = "app-api.pixiv.net"
         }
-        if headers["User-Agent"] ?? nil == nil && headers["user-agent"] ?? nil == nil {
+        if headers["User-Agent"] == nil && headers["user-agent"] == nil {
             _headers["App-OS"] = "ios"
             _headers["App-OS-Version"] = "12.2"
             _headers["App-Version"] = "7.6.2"
