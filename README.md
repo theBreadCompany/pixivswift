@@ -17,7 +17,7 @@ Also, please do not overuse this. Pixiv has no financial benefit from this, and 
 
 ### Swift Package Manager
 - simply add https://github.com/theBreadCompany/pixivswift.git to Xcode or
-- add `.package(url: "https://github.com/theBreadCompany/pixivswift.git", .branch("master"))` to your Package.swift dependencies
+- add `.package(url: "https://github.com/theBreadCompany/pixivswift.git", from: "1.0.0")` to your Package.swift dependencies
 
 ## Documentation
 
