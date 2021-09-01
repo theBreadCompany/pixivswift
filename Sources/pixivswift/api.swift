@@ -136,7 +136,6 @@ public class BasePixivAPI {
         ] as [String : String]
         
         let token: JSON
-        #if canImport(Erik)
         if !username.isEmpty && !password.isEmpty {
             do {
                 token = try self.parse_json(json: self.login(username: username, password: password))
@@ -157,22 +156,6 @@ public class BasePixivAPI {
         } else {
             throw PixivError.badProgramming(misstake: "auth() has been called, but without any credentials or refresh_token")
         }
-        #else
-        if !refresh_token.isEmpty || !self.refresh_token.isEmpty {
-            data["grant_type"] = "refresh_token"
-            data["refresh_token"] = !refresh_token.isEmpty ? refresh_token: self.refresh_token
-            
-            let r: String
-            do {
-                r = try self.requests_call(method: .POST, url: url, headers: headers, data: data)
-            } catch PixivError.badProgramming /* 400 is generally a bad request, so a login error is a more specific version of that */ {
-                throw PixivError.AuthErrors.authFailed("auth() failed! check refresh_token.")
-            }
-            token = self.parse_json(json: r.description)["response"]
-        } else {
-            throw PixivError.badProgramming(misstake: "auth() has been called, but without any credentials or refresh_token")
-        }
-        #endif
 
         
         self.access_token = token["access_token"].stringValue
