@@ -72,76 +72,96 @@ extension BasePixivAPI {
         return response
     }
     
-    func login(username: String, password: String) throws -> String {
+    func login(username: String, password: String) -> String {
         let web = WKWebView()
         let erik = Erik(webView: web)
         
-        var code = ""
+        var shouldKeepRunning = true
+        
+        let (code_verifier, code_challenge) = oauth_pkce()
+
+        var response = ""
         
         var _ = web.observe(\.url, options: .new) {_, change in
             if let value = change.newValue {
                 if let value = value {
                     if value.scheme == "pixiv" {
                         let components = URLComponents(url: value, resolvingAgainstBaseURL: false)!
-                        code = components.queryItems!.first(where: { queryItem -> Bool in queryItem.name == "code" })!.value!
+                        response = self.handle_code(components.queryItems!.first(where: { queryItem -> Bool in queryItem.name == "code" })!.value!, code_challenge: code_challenge, code_verifier: code_verifier)
                     }
                 }
             }
         }
-        
-        
-        let (code_verifier, code_challenge) = oauth_pkce()
-        
-        let login_params = [
-            "code_challenge": code_challenge,
-            "code_challenge_method": "S256",
-            "client": "pixiv-android"
+            
+        var compontents = URLComponents(string: "https://app-api.pixiv.net/web/v1/login")!
+        compontents.queryItems = [
+            URLQueryItem(name: "code_challenge", value: code_challenge),
+            URLQueryItem(name: "code_challenge_method", value: "S256"),
+            URLQueryItem(name: "client", value: "pixiv-android")
         ]
         
-        var params_string = ""
-        for (key, val) in login_params {
-            params_string += "\(key)=\(val)&"
-        }
-        params_string.removeLast()
-        
-        let url = URL(string:"https://app-api.pixiv.net/web/v1/login?"+params_string)!
-        
-        var response = ""
-        
-        var error = false
-        
-        erik.visit(url: url) { document, _ in
-            guard let document = document else { return }
+        let url = compontents.url!
+        print(url)
             
-            if let b = document.querySelectorAll("button[class=\"button secondary\"]").first {
-                b.click()
-            }
-            
-            erik.visit(url: erik.url!) { document, _ in
-                guard let document = document else { return }
+        let error = false
+        
+        erik.visit(url: url) { document, err in
+            if err == nil, let document = document {
+                print("succeded")
+                print(document.querySelectorAll("button"))
                 
-                if let username_input = document.querySelectorAll("input[type=\"text\"]").dropFirst().first {
-                    username_input["value"] = username
+                if let b = document.querySelectorAll("button.sc-1lncwd-0.fmkwSU.vsvtes-6.lnXvUo").first {
+                    print("got recognized, clicking on 'login in with a different account'")
+                    b.click()
                 }
-                if let passwd_input = document.querySelectorAll("input[type=\"password\"]").dropFirst().first { passwd_input["value"] = password
-                }
-                document.querySelectorAll("button[type=\"submit\"]")[1].click {doc,_ in
-                    
-                    if (doc as! Document).toHTML!.contains("Please check") {
-                        error = true
-                    }
-                    
-                    while code.isEmpty {
-                        continue
-                    }
-                    
-                    response = self.handle_code(code, code_challenge: code_challenge, code_verifier: code_verifier)
-                    
-                }
+                shouldKeepRunning = false
+            } else {
+                shouldKeepRunning = false
+                print("failed!")
             }
         }
+        
+        while shouldKeepRunning && RunLoop.current.run(mode: .default, before: .distantFuture) { }
+        shouldKeepRunning = true
+        
+            
+        erik.currentContent { document, _ in
+            
+            print("editing credentials...")
+                    
+            guard let document = document else { shouldKeepRunning = false; print("something failed!"); return}
+            
+            if let username_input = document.querySelectorAll("input[type=\"text\"]").dropFirst().first {
+                username_input["value"] = username
+            }
+            if let passwd_input = document.querySelectorAll("input[type=\"password\"]").dropFirst().first {
+                passwd_input["value"] = password
+            }
+            shouldKeepRunning = false
+        }
+        
+        while shouldKeepRunning && RunLoop.current.run(mode: .default, before: .distantFuture) { }
+        shouldKeepRunning = true
+            
+        erik.currentContent { document, _ in
+            
+            guard let document = document else { shouldKeepRunning = false; print("something failed!"); return}
+
+            if let form = document.querySelectorAll("button.signup-form__submit").dropFirst().first {
+                form.click()
+            } else {
+            }
+        }
+        
+        DispatchQueue.global().async {
+            Thread.sleep(forTimeInterval: .init(10))
+            shouldKeepRunning = false
+        }
+
+        while shouldKeepRunning && RunLoop.current.run(mode: .default, before: .distantFuture) { }
+        
         if error {
-            throw PixivError.AuthErrors.authFailed("Wrong PixivID/username or password!")
+            fatalError("Wrong PixivID/username or password!")
         } else {
             return response
         }
