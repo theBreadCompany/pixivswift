@@ -73,25 +73,18 @@ extension BasePixivAPI {
     }
     
     func login(username: String, password: String) -> String {
-        let web = WKWebView()
-        let erik = Erik(webView: web)
-        
         var shouldKeepRunning = true
+
+        let h = pixivURLHandler()
+                
+        let c = WKWebViewConfiguration()
+        c.setURLSchemeHandler(h, forURLScheme: "pixiv")
+        let web = WKWebView(frame: .init(x: 0, y: 0, width: 500, height: 800), configuration: c)
+        let erik = Erik(webView: web)
         
         let (code_verifier, code_challenge) = oauth_pkce()
 
         var response = ""
-        
-        var _ = web.observe(\.url, options: .new) {_, change in
-            if let value = change.newValue {
-                if let value = value {
-                    if value.scheme == "pixiv" {
-                        let components = URLComponents(url: value, resolvingAgainstBaseURL: false)!
-                        response = self.handle_code(components.queryItems!.first(where: { queryItem -> Bool in queryItem.name == "code" })!.value!, code_challenge: code_challenge, code_verifier: code_verifier)
-                    }
-                }
-            }
-        }
             
         var compontents = URLComponents(string: "https://app-api.pixiv.net/web/v1/login")!
         compontents.queryItems = [
@@ -101,9 +94,8 @@ extension BasePixivAPI {
         ]
         
         let url = compontents.url!
-        print(url)
             
-        let error = false
+        var error = false
         
         erik.visit(url: url) { document, err in
             if err == nil, let document = document {
@@ -114,7 +106,35 @@ extension BasePixivAPI {
                     print("got recognized, clicking on 'login in with a different account'")
                     b.click()
                 }
-                shouldKeepRunning = false
+                
+                erik.currentContent { document, _ in
+                    
+                    print("editing credentials...")
+                            
+                    guard let document = document else { shouldKeepRunning = false; print("something failed!"); return}
+                    
+                    if let username_input = document.querySelectorAll("input[type=\"text\"]").first {
+                        username_input["value"] = username
+                        print("entered username")
+                    } else {
+                        print("couldnt find username textfield")
+                    }
+                    if let passwd_input = document.querySelectorAll("input[type=\"password\"]").first {
+                        passwd_input["value"] = password
+                        print("entered password")
+                    } else {
+                        print("couldnt find password textfield")
+                    }
+                    
+                    if let form = document.querySelectorAll("button.signup-form__submit").first {
+                        form.click()
+                        print("clicked \"login\"")
+                    } else {
+                        print("couldnt find login button")
+                    }
+                    
+                    shouldKeepRunning = false
+                }
             } else {
                 shouldKeepRunning = false
                 print("failed!")
@@ -124,34 +144,6 @@ extension BasePixivAPI {
         while shouldKeepRunning && RunLoop.current.run(mode: .default, before: .distantFuture) { }
         shouldKeepRunning = true
         
-            
-        erik.currentContent { document, _ in
-            
-            print("editing credentials...")
-                    
-            guard let document = document else { shouldKeepRunning = false; print("something failed!"); return}
-            
-            if let username_input = document.querySelectorAll("input[type=\"text\"]").dropFirst().first {
-                username_input["value"] = username
-            }
-            if let passwd_input = document.querySelectorAll("input[type=\"password\"]").dropFirst().first {
-                passwd_input["value"] = password
-            }
-            shouldKeepRunning = false
-        }
-        
-        while shouldKeepRunning && RunLoop.current.run(mode: .default, before: .distantFuture) { }
-        shouldKeepRunning = true
-            
-        erik.currentContent { document, _ in
-            
-            guard let document = document else { shouldKeepRunning = false; print("something failed!"); return}
-
-            if let form = document.querySelectorAll("button.signup-form__submit").dropFirst().first {
-                form.click()
-            } else {
-            }
-        }
         
         DispatchQueue.global().async {
             Thread.sleep(forTimeInterval: .init(10))
@@ -160,6 +152,12 @@ extension BasePixivAPI {
 
         while shouldKeepRunning && RunLoop.current.run(mode: .default, before: .distantFuture) { }
         
+        if !h.code.isEmpty {
+            response = handle_code(h.code, code_challenge: code_challenge, code_verifier: code_verifier)
+        } else {
+            error = true
+        }
+        
         if error {
             fatalError("Wrong PixivID/username or password!")
         } else {
@@ -167,4 +165,19 @@ extension BasePixivAPI {
         }
     }
 }
+
+fileprivate class pixivURLHandler: NSObject, WKURLSchemeHandler {
+    
+    var code = ""
+    
+    func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
+        guard let url = urlSchemeTask.request.url else { return }
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)!
+        components.queryItems?.forEach( { if $0.name == "code" { self.code = $0.value! } } )
+    }
+    
+    func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {}
+    
+}
+
 #endif
