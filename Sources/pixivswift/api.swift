@@ -140,7 +140,12 @@ public class BasePixivAPI {
             do {
                 token = try self.parse_json(json: self.login(username: username, password: password))
             } catch let e {
-                throw e
+                if e as? HeadlessLoginError == HeadlessLoginError.recognition {
+                    Thread.sleep(forTimeInterval: .init(10)) // wait then retry, mostly works
+                    token = try self.parse_json(json: self.login(username: username, password: password))
+                } else {
+                    throw e
+                }
             }
         } else if !refresh_token.isEmpty || !self.refresh_token.isEmpty {
             data["grant_type"] = "refresh_token"

@@ -3,7 +3,7 @@
 //  
 //
 //  Created by Fabio Mauersberger on 01.07.21.
-//
+//  This is cursed and bad code.
 
 #if canImport(Erik)
 import Erik
@@ -72,14 +72,14 @@ extension BasePixivAPI {
         return response
     }
     
-    func login(username: String, password: String) -> String {
+    func login(username: String, password: String) throws -> String {
         var shouldKeepRunning = true
 
         let h = pixivURLHandler()
                 
         let c = WKWebViewConfiguration()
         c.setURLSchemeHandler(h, forURLScheme: "pixiv")
-        let web = WKWebView(frame: .init(x: 0, y: 0, width: 500, height: 800), configuration: c)
+        let web = WKWebView(frame: .init(), configuration: c)
         let erik = Erik(webView: web)
         
         let (code_verifier, code_challenge) = oauth_pkce()
@@ -92,45 +92,34 @@ extension BasePixivAPI {
             URLQueryItem(name: "code_challenge_method", value: "S256"),
             URLQueryItem(name: "client", value: "pixiv-android")
         ]
+
+        var error: HeadlessLoginError? = nil
         
-        let url = compontents.url!
-            
-        var error = false
-        
-        erik.visit(url: url) { document, err in
+        erik.visit(url: compontents.url!) { document, err in
             if err == nil, let document = document {
                 print("succeded")
                 print(document.querySelectorAll("button"))
                 
-                if let b = document.querySelectorAll("button.sc-1lncwd-0.fmkwSU.vsvtes-6.lnXvUo").first {
-                    print("got recognized, clicking on 'login in with a different account'")
-                    b.click()
+                if let _ = document.querySelectorAll("button.sc-1lncwd-0.fmkwSU.vsvtes-6.lnXvUo").first {
+                    // we just crash if we get recognised
+                    error = .recognition
+                    shouldKeepRunning = false
+                    return
                 }
                 
                 erik.currentContent { document, _ in
-                    
-                    print("editing credentials...")
-                            
+                                                
                     guard let document = document else { shouldKeepRunning = false; print("something failed!"); return}
                     
                     if let username_input = document.querySelectorAll("input[type=\"text\"]").first {
                         username_input["value"] = username
-                        print("entered username")
-                    } else {
-                        print("couldnt find username textfield")
                     }
                     if let passwd_input = document.querySelectorAll("input[type=\"password\"]").first {
                         passwd_input["value"] = password
-                        print("entered password")
-                    } else {
-                        print("couldnt find password textfield")
                     }
                     
                     if let form = document.querySelectorAll("button.signup-form__submit").first {
                         form.click()
-                        print("clicked \"login\"")
-                    } else {
-                        print("couldnt find login button")
                     }
                     
                     shouldKeepRunning = false
@@ -140,6 +129,8 @@ extension BasePixivAPI {
                 print("failed!")
             }
         }
+        
+        if let error = error { throw error }
         
         while shouldKeepRunning && RunLoop.current.run(mode: .default, before: .distantFuture) { }
         shouldKeepRunning = true
@@ -155,11 +146,11 @@ extension BasePixivAPI {
         if !h.code.isEmpty {
             response = handle_code(h.code, code_challenge: code_challenge, code_verifier: code_verifier)
         } else {
-            error = true
+            error = .badCredentials
         }
         
-        if error {
-            fatalError("Wrong PixivID/username or password!")
+        if let error = error {
+            throw error
         } else {
             return response
         }
@@ -178,6 +169,11 @@ fileprivate class pixivURLHandler: NSObject, WKURLSchemeHandler {
     
     func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {}
     
+}
+
+enum HeadlessLoginError: Error {
+    case badCredentials
+    case recognition
 }
 
 #endif
