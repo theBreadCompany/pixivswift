@@ -10,7 +10,7 @@ Also, please do not overuse this. Pixiv has no financial benefit from this, and 
 ## Features
 
 - Headless login
-- Access to both the public API and the API used by the Pixiv app
+- Access to both the public API and the API used by the Pixiv app (NOTE: the public API seems dead so I will drop it soon)
 - Directly download images (although ugoiras require further handling, more on that will follow)
 
 ## Installation
@@ -38,6 +38,7 @@ WIP, please have a look at pixivpy ^^'.
 
 ## Announcements
 I'll release a repo of an iOS/macOS app using this API in a few weeks.
+You can already find my script using this API with an intermediate wrapper [here](https://github.com/theBreadCompany/pixivloader).
 
 ## Credits
 - [pixiv.net](https://pixiv.net) for their amazing platform
