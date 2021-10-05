@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  api.swift
 //  pixivswift
 //
 //  Created by Fabio Mauersberger on 16.04.21.
@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import SwiftyJSON
 
 public class BasePixivAPI {
     
@@ -35,11 +34,11 @@ public class BasePixivAPI {
     }
     
     
-    public func parse_json(json: String) -> JSON {
+    public func parse_json(json: String) -> Dictionary<String, Any> {
         do {
-            return try JSON(data: Data(json.utf8))
+            return try JSONSerialization.jsonObject(with: Data(json.utf8), options: []) as! Dictionary<String, Any>
         } catch {
-            return [:]
+            return Dictionary<String, Any>()
         }
     }
     
@@ -110,7 +109,7 @@ public class BasePixivAPI {
         self.client_secret = client_secret
     }
     
-    public func auth(username: String = "", password: String = "", refresh_token: String = "") throws -> JSON {
+    public func auth(username: String = "", password: String = "", refresh_token: String = "") throws -> Dictionary<String, Any> {
         let formatter = DateFormatter()
         formatter.setLocalizedDateFormatFromTemplate("y-m-dTH:m:s+00:00")
         let local_time = formatter.string(from: Date())
@@ -135,7 +134,7 @@ public class BasePixivAPI {
             "client_secret": self.client_secret,
         ] as [String : String]
         
-        let token: JSON
+        let token: Dictionary<String, Any>
         if !username.isEmpty && !password.isEmpty {
             do {
                 token = try self.parse_json(json: self.login(username: username, password: password))
@@ -157,15 +156,18 @@ public class BasePixivAPI {
             } catch PixivError.badProgramming /* 400 is generally a bad request, so a login error is a more specific version of that */ {
                 throw PixivError.AuthErrors.authFailed("auth() failed! check refresh_token.")
             }
-            token = self.parse_json(json: r.description)["response"]
+            token = self.parse_json(json: r.description)["response"]! as! Dictionary<String, Any>
         } else {
             throw PixivError.badProgramming(misstake: "auth() has been called, but without any credentials or refresh_token")
         }
 
-        
-        self.access_token = token["access_token"].stringValue
-        self.user_id = token["user"]["id"].intValue
-        self.refresh_token = token["refresh_token"].stringValue
+        // I hate native JSON handling rofl.
+        if let _access_token = token["access_token"] as? String, let _user_id = Int((token["user"] as? Dictionary<String, Any>)?["id"] as? String ?? "") , let _refresh_token = token["refresh_token"] as? String {
+            self.access_token = _access_token
+            self.user_id = _user_id
+            self.refresh_token = _refresh_token
+        }
+
         return token
     }
     

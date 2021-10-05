@@ -27,14 +27,13 @@ It's basicaly the same usage like [upbit's pixivpy](https://github.com/upbit/pix
 WIP, please have a look at pixivpy ^^'.
 
 ### Tips & Tricks
-- You may use both the PublicAPI and the AppAPI class if nescessary 
-- The public API grants access to searches by illustration popularity, which the AppAPI doesn't, even with the correct keyword
+- ~~You may use both the PublicAPI and the AppAPI class if nescessary~~ The PublicAPI will be deprecated soon.
+- ~~The public API grants access to searches by illustration popularity, which the AppAPI doesn't, even with the correct keyword~~ The PublicAPI seems to have been shutdown even further, now including the search function. You now have to use the AppAPI and look at a bigger collection of illustrations and i. e. filter out by a minimum number of bookmarks or views. You may use the popular search if you have a premium account. The API will automatically switch from using the most popular to the newest populations if you dont have premium, even if using ```SearchMode.popular_desc```.
 - ugoiras are essentially image sequences which have to be assembled manually -> the image urls contain a link to a zip file containing the images. Fetch this first, [unzip](https://github.com/marmelroy/zip), fetch metadata via ```AppPixivAPI.ugoira_metadata``` and use the first given frame delay for assembling. Code will follow.
 
 ## TODO
 - Improve this documentation (provide code examples)
 - Create tests
-- Write a codeable class for (far) easier response handling
 
 ## Announcements
 I'll release a repo of an iOS/macOS app using this API in a few weeks.

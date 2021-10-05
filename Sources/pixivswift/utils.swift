@@ -7,7 +7,7 @@
 
 import Foundation
 import CryptoKit
-    import CommonCrypto
+import CommonCrypto
 
 public enum PixivError: Error {
     

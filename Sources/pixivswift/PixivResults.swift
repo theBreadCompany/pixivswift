@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  File
+//  PixivResults.swift
+//  pixivswift
 //
 //  Created by Fabio Mauersberger on 03.10.21.
 //
@@ -9,52 +9,62 @@ import Foundation
 
 public struct PixivResult: Codable {
     
-    enum CodingKeys: String, CodingKey {
-        case users = "user_previews"
-        case nextURL = "next_url"
-        case illusts
-    }
-    
-    var illusts: [PixivIllustration]?
-    var users: [PixivUser]?
-    var nextURL: URL?
+    public var illusts: [PixivIllustration]?
+    public var userPreviews: [PixivUser]?
+    public var nextURL: URL?
 }
 
 public struct PixivIllustration: Codable {
     
-    var sanityLevel: Int
-    private var _creationDate: Date
-    var xRestrict: Int
-    var tags: [IllustrationTag]
-    var visible: Bool
-    var metaPages: [String]
-    var isBookmarked: Bool
-    var type: IllustrationType
-    var title: String
-    var height: Int
-    var id: Int
-    var pageCount: Int
-    var user: PixivUser
-    var totalView: Int
-    var tools: [String]
-    var isMuted: Bool
-    var width: Int
-    var series: IllustrationSeries?
-    var totalBookmarks: Int
-    var metaSinglePage: [String:URL]
-    var restrict: Int
-    var imageURLs: [String:URL]
-    var caption: String
+    public var sanityLevel: Int
+    private var createDate: String
+    public var creationDate: Date {
+        return ISO8601DateFormatter().date(from: createDate)!
+    }
+    public var xRestrict: Int
+    public var tags: [IllustrationTag]
+    public var visible: Bool
+    public var metaPages: [IllustrationImageURLs] { // we could  extract them from the json but seems to be actually easier to generate them like this
+        var pages = [IllustrationImageURLs]()
+        for n in 0...pageCount-1 {
+            pages.append(IllustrationImageURLs(
+                squareMedium: URL(string: imageUrls.squareMedium.absoluteString.replacingOccurrences(of: "_p0", with: "_p\(n)"))!,
+                medium: URL(string: imageUrls.medium.absoluteString.replacingOccurrences(of: "_p0", with: "_p\(n)"))!,
+                large: URL(string: imageUrls.large.absoluteString.replacingOccurrences(of: "_p0", with: "_p\(n)"))!))
+        }
+        return pages
+    }
+    public var isBookmarked: Bool
+    public var type: IllustrationType
+    public var title: String
+    public var height: Int
+    public var id: Int
+    public var pageCount: Int
+    public var user: PixivUserProperties
+    public var totalView: Int
+    public var tools: [String]
+    public var isMuted: Bool
+    public var width: Int
+    public var series: IllustrationSeries?
+    public var totalBookmarks: Int
+    public var metaSinglePage: [String:URL]
+    public var restrict: Int
+    public var imageUrls: IllustrationImageURLs
+    public var caption: String
 }
 
 public struct PixivUser: Codable {
     
-    var profileImageURLs: [String: URL]
-    var id: Int
-    var name: String
-    var isFollowed: Bool
-    var account: String
-    
+    public var user: PixivUserProperties
+    public var illusts: [PixivIllustration]
+}
+
+public struct PixivUserProperties: Codable {
+    public var profileImageUrls: [String: URL]
+    public var id: Int
+    public var name: String
+    public var isFollowed: Bool
+    public var account: String
 }
 
 public enum IllustrationType: String, Codable {
@@ -62,29 +72,26 @@ public enum IllustrationType: String, Codable {
     case illust
     case manga
     case ugoira
-    
 }
 
 public struct IllustrationSeries: Codable {
     
-    var title: String
-    var id: Int
-    
+    public var title: String
+    public var id: Int
 }
 
 public struct IllustrationTag: Codable {
     
-    var name: String
-    var translatedName: String?
-    
+    public var name: String
+    public var translatedName: String?
 }
 
 public struct IllustrationImageURLs: Codable {
     
-    var squareMedium: URL
-    var medium: URL
-    var large: URL
-    var original: URL {
+    public var squareMedium: URL
+    public var medium: URL
+    public var large: URL
+    public var original: URL {
         URL(string: large.absoluteString.replacingOccurrences(of: "c/600x1200_90_webp/img-master", with: "img-original").replacingOccurrences(of: "_master1200", with: ""))!
     }
 }

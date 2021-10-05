@@ -9,6 +9,7 @@
 import Foundation
 import SwiftyJSON
 
+@available(*, deprecated, message: "This API has been mostly shut down, please switch to the AppAPI")
 public class PixivAPI: BasePixivAPI {
     
     public override init() {
@@ -26,8 +27,7 @@ public class PixivAPI: BasePixivAPI {
     }
     
     public func parse_result(req: String) -> JSON{
-        let result = self.parse_json(json: req.description)
-        return result
+        return JSON(rawValue: req)!
     }
     /* dead
     /**
