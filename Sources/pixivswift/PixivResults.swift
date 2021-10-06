@@ -10,6 +10,7 @@ import Foundation
 public struct PixivResult: Codable {
     
     public var illusts: [PixivIllustration]?
+    public var ugoiraMetadata: UgoiraMetadata?  // sorry for leaving it at object root :/
     public var userPreviews: [PixivUser]?
     public var nextURL: URL?
 }
@@ -94,4 +95,19 @@ public struct IllustrationImageURLs: Codable {
     public var original: URL {
         URL(string: large.absoluteString.replacingOccurrences(of: "c/600x1200_90_webp/img-master", with: "img-original").replacingOccurrences(of: "_master1200", with: ""))!
     }
+}
+
+public struct UgoiraMetadata: Codable {
+    
+    public struct UgoiraFrame: Codable {
+        public var file: String
+        public var delay: Int
+    }
+    
+    public struct UgoiraURLs: Codable {
+        public var medium: URL
+    }
+    
+    public var zipUrls: UgoiraURLs
+    public var frames: [UgoiraFrame]
 }
