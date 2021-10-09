@@ -44,17 +44,7 @@ public struct PixivIllustration: Codable {
     public var xRestrict: Int
     public var tags: [IllustrationTag]
     public var visible: Bool
-    public var metaPages: [IllustrationImageURLs] { // we could  extract them from the json but seems to be actually easier to generate them like this
-        var pages = [IllustrationImageURLs]()
-        for n in 0...pageCount-1 {
-            pages.append(IllustrationImageURLs(
-                squareMedium: URL(string: imageUrls.squareMedium.absoluteString.replacingOccurrences(of: "_p0", with: "_p\(n)"))!,
-                medium: URL(string: imageUrls.medium.absoluteString.replacingOccurrences(of: "_p0", with: "_p\(n)"))!,
-                large: URL(string: imageUrls.large.absoluteString.replacingOccurrences(of: "_p0", with: "_p\(n)"))!,
-                original: metaSinglePage["original_image_url"] ?? URL(string: imageUrls.large.absoluteString.replacingOccurrences(of: "c/600x1200_90_webp/img-master", with: "img-original").replacingOccurrences(of: "_master1200", with: "").replacingOccurrences(of: "_p0", with: "_p\(n)"))!))
-        }
-        return pages
-    }
+    private var metaPages: [IllustrationImageURLs]
     public var isBookmarked: Bool
     public var type: IllustrationType
     public var title: String
@@ -70,7 +60,18 @@ public struct PixivIllustration: Codable {
     public var totalBookmarks: Int
     public var metaSinglePage: [String:URL]
     public var restrict: Int
-    private var imageUrls: IllustrationImageURLs // this is genuinly unsatisfying, but the image_urls property in the json doesnt contain a "original" URL, using the meta_single_page one for that instead (which is only used for pageCount>1)
+    private var imageUrls: IllustrationImageURLs
+    public var illustrationURLs: [IllustrationImageURLs] {
+        if pageCount == 1 {
+            return [IllustrationImageURLs(
+                squareMedium: imageUrls.squareMedium,
+                medium: imageUrls.medium,
+                large: imageUrls.large,
+                original: metaSinglePage["original_image_url"]!)]
+        } else {
+            return metaPages
+        }
+    }
     public var caption: String
 }
 

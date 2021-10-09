@@ -375,7 +375,7 @@ open class PixivDownloader {
             try! FileManager().createDirectory(at: directory, withIntermediateDirectories: true)
         }
         
-        let target_urls: [URL] = previews_only ? illustration.metaPages.map {$0.squareMedium} : illustration.metaPages.map {$0.original}
+        let target_urls: [URL] = previews_only ? illustration.illustrationURLs.map {$0.squareMedium} : illustration.illustrationURLs.map {$0.original}
         
         var succeededURLs = [URL]()
         
