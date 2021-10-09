@@ -202,7 +202,7 @@ public class BasePixivAPI {
             task.allHTTPHeaderFields = ["Referer": referer.absoluteString]
             var error_occured = false
             let request = URLSession.shared.dataTask(with: task) { data, _, error in
-                guard let data = data, error == nil else { return }
+                guard let data = data, error == nil else { error_occured = true; return }
                 guard let _ = try? data.write(to: URL(fileURLWithPath: img_path), options: []) else { error_occured = true; return }
             }
             request.resume()
