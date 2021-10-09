@@ -51,7 +51,7 @@ public struct PixivIllustration: Codable {
                 squareMedium: URL(string: imageUrls.squareMedium.absoluteString.replacingOccurrences(of: "_p0", with: "_p\(n)"))!,
                 medium: URL(string: imageUrls.medium.absoluteString.replacingOccurrences(of: "_p0", with: "_p\(n)"))!,
                 large: URL(string: imageUrls.large.absoluteString.replacingOccurrences(of: "_p0", with: "_p\(n)"))!,
-                original: metaSinglePage["original_image_url"] ?? URL(string: imageUrls.large.absoluteString.replacingOccurrences(of: "c/600x1200_90_webp/img-master", with: "img-original").replacingOccurrences(of: "_master1200", with: "").replacingOccurrences(of: "_p0", with: "_p\(n)")))!))
+                original: metaSinglePage["original_image_url"] ?? URL(string: imageUrls.large.absoluteString.replacingOccurrences(of: "c/600x1200_90_webp/img-master", with: "img-original").replacingOccurrences(of: "_master1200", with: "").replacingOccurrences(of: "_p0", with: "_p\(n)"))!))
         }
         return pages
     }
