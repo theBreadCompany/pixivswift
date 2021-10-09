@@ -206,7 +206,7 @@ public class BasePixivAPI {
                 guard let _ = try? data.write(to: URL(fileURLWithPath: img_path), options: []) else { error_occured = true; return }
             }
             request.resume()
-            while request.response == nil && RunLoop.current.run(mode: .default, before: .distantFuture) {}
+            while request.response == nil {}
             return !error_occured
             
         }
