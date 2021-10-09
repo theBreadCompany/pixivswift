@@ -9,7 +9,26 @@ import Foundation
 
 public struct PixivResult: Codable {
     
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        illusts = try values.decodeIfPresent([PixivIllustration].self, forKey: .illusts)
+        illust = try values.decodeIfPresent(PixivIllustration.self, forKey: .illust)
+        ugoiraMetadata = try values.decodeIfPresent(UgoiraMetadata.self, forKey: .ugoiraMetadata)
+        userPreviews = try values.decodeIfPresent([PixivUser].self, forKey: .userPreviews)
+        nextURL = try values.decodeIfPresent(URL.self, forKey: .nextURL)
+        if let illust = illust {
+            if illusts == nil {
+                illusts = [illust]
+            } else {
+                illusts?.append(illust)
+            }
+        }
+    }
+    
+    enum CodingKeys: String, CodingKey { case illusts, illust, ugoiraMetadata, userPreviews, nextURL }
+    
     public var illusts: [PixivIllustration]?
+    private var illust: PixivIllustration?
     public var ugoiraMetadata: UgoiraMetadata?  // sorry for leaving it at object root :/
     public var userPreviews: [PixivUser]?
     public var nextURL: URL?
