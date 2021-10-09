@@ -18,9 +18,7 @@ let package = Package(
     targets: [
         .target(
             name: "pixivswift",
-            dependencies: [
-                /*"SwiftyJSON",*/ "Erik" // headless login only makes sense on headless environments like CLIs
-            ],
+            dependencies: [ /*"SwiftyJSON",*/ "Erik" ], // headless login only makes sense on headless environments like CLIs
             exclude: ["papi.swift"]
         ),
         .target(

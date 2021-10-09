@@ -189,24 +189,23 @@ public class BasePixivAPI {
             _name = url.absoluteString.split(separator: "/").last!.description
         }
         
-        var img_path = ""
         if !_name.isEmpty {
             _name = prefix + _name
-            img_path = "\(path)/\(_name)"
+            let targetURL = URL(string: "file:///\(path.path)/\(_name)")!.absoluteURL  // this looks very bad, and it probably is, but it works; the correct way doesnt work (for me at least)
             
-            if FileManager.default.fileExists(atPath: img_path) {
-                return true
-            }
+            if FileManager.default.fileExists(atPath: targetURL.path) { return true }
             
             var task = URLRequest(url: url)
             task.allHTTPHeaderFields = ["Referer": referer.absoluteString]
             var error_occured = false
-            let request = URLSession.shared.dataTask(with: task) { data, _, error in
-                guard let data = data, error == nil else { error_occured = true; return }
-                guard let _ = try? data.write(to: URL(fileURLWithPath: img_path), options: []) else { error_occured = true; return }
-            }
-            request.resume()
-            while request.response == nil {}
+            var lock = true
+            let _ = URLSession.shared.dataTask(with: task) { data, r, error in
+                guard let data = data, error == nil else { error_occured = true; lock = false; return }
+                guard let _ = try? data.write(to: targetURL) else { error_occured = true; lock = false; return }
+                lock = false
+                
+            }.resume()
+            while lock { }
             return !error_occured
             
         }

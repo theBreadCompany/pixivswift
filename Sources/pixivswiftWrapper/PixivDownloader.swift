@@ -352,7 +352,7 @@ open class PixivDownloader {
             
             var succeededURL: URL? = nil
             
-            let request = URLSession.shared.dataTask(with: task ) { data, response, error in
+            let request = URLSession.shared.dataTask(with: task ) { data, _, error in
                 guard let imagedata = data, error == nil else { return }
                 let target = URL(fileURLWithPath: url.lastPathComponent, relativeTo: directory)
                 if with_metadata {
