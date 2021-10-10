@@ -110,23 +110,26 @@ public struct IllustrationTag: Codable {
 
 public struct IllustrationImageURLs: Codable {
     
-    enum CodingKeys: String, CodingKey { case squareMedium, medium, large, original }
+    enum CodingKeys: String, CodingKey { case imageUrls, squareMedium, medium, large, original }
     
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        squareMedium = try values.decode(URL.self, forKey: .squareMedium)
-        medium = try values.decode(URL.self, forKey: .medium)
-        large = try values.decode(URL.self, forKey: .large)
-        original = try values.decodeIfPresent(URL.self, forKey: .original) ?? URL(string: large.absoluteString.replacingOccurrences(of: "c/600x1200_90_webp/img-master", with: "img-original").replacingOccurrences(of: "_master1200", with: ""))!
+        imageUrls =  try values.decodeIfPresent([String:URL].self, forKey: .imageUrls) ?? [:]
+        squareMedium = try values.decodeIfPresent(URL.self, forKey: .squareMedium) ?? imageUrls["square_medium"]!
+        medium = try values.decodeIfPresent(URL.self, forKey: .medium) ?? imageUrls["medium"]!
+        large = try values.decodeIfPresent(URL.self, forKey: .large) ?? imageUrls["large"]!
+        original = try values.decodeIfPresent(URL.self, forKey: .original) ?? imageUrls["original"] ?? large // large is simply for safe fallback reasons, this will be overwritten anyways if it has to use it
     }
     
     init(squareMedium: URL, medium: URL, large: URL, original: URL) {
+        self.imageUrls = [:]
         self.squareMedium = squareMedium
         self.medium = medium
         self.large = large
         self.original = original
     }
     
+    private var imageUrls: [String:URL]
     public var squareMedium: URL
     public var medium: URL
     public var large: URL
