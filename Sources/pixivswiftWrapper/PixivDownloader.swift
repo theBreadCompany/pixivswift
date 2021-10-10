@@ -427,7 +427,7 @@ open class PixivDownloader {
             "ObjectName": metadata.title,
             "ObjectType": metadata.type == .illust ? "illustration" : metadata.type.rawValue,
             "Caption/Abstract": metadata.caption,
-            "Source": metadata.metaPages.first!.original.deletingLastPathComponent().appendingPathComponent(illust_url.lastPathComponent)
+            "Source": metadata.illustrationURLs.first!.original.deletingLastPathComponent().appendingPathComponent(illust_url.lastPathComponent)
             
         ]
         properties.updateValue(IPTCmetadata, forKey: "{IPTC}")
