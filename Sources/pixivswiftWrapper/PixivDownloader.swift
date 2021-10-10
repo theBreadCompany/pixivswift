@@ -259,7 +259,7 @@ open class PixivDownloader {
             illusts = aapi_collect(result: result, targetCollection: illusts, limit: limit)
             if illusts.count == limit { return illusts }
             let arguments = try! self._aapi.parse_qs(url: result.nextURL?.absoluteString ?? "")
-            result = try self._aapi.user_illusts(user_id: arguments["user_id"] as? Int ?? userID, type: arguments["type"] as? String ?? "illusts", filter: arguments["filter"] ?? "for_ios", offset: illusts.count)
+            result = try self._aapi.user_illusts(user_id: arguments["user_id"] as? Int ?? userID, type: arguments["type"] as? String ?? "illusts", filter: arguments["filter"] as? String ?? "for_ios", offset: illusts.count)
         }
     }
     
