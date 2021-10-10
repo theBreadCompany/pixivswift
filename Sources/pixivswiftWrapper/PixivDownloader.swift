@@ -164,7 +164,7 @@ open class PixivDownloader {
                 }
             }
             let arguments = try! self._aapi.parse_qs(url: result.nextURL?.absoluteString ?? "") // AA FORGOT TO EDIT PARSE_QS
-            result = try self._aapi.illust_follow(restrict: Publicity(rawValue: arguments["restrict"] as? String ?? "")!, offset: count)
+            result = try self._aapi.illust_follow(restrict: Publicity(rawValue: arguments["restrict"] ?? "") ?? publicity, offset: count)
         }
     }
     
@@ -183,7 +183,7 @@ open class PixivDownloader {
             illusts = aapi_collect(result: result, targetCollection: illusts, limit: limit)
             if illusts.count == limit { return illusts }
             let arguments = try! self._aapi.parse_qs(url: result.nextURL?.absoluteString ?? "")
-            result = try self._aapi.user_bookmarks_illust(user_id: arguments["user_id"] as! Int, restrict: Publicity(rawValue: arguments["restrict"] as! String)!, filter: arguments["filter"] as! String, max_bookmark: arguments["max_bookmark_id"] as? Int, tag: arguments["tag"] as? String)
+            result = try self._aapi.user_bookmarks_illust(user_id: arguments["user_id"] ?? self._aapi.user_id, restrict: Publicity(rawValue: arguments["restrict"]) ?? publicity, filter: arguments["filter"] as! String, max_bookmark: arguments["max_bookmark_id"], tag: arguments["tag"])
         }
     }
     
@@ -253,12 +253,13 @@ open class PixivDownloader {
      */
     open func user_illusts(user: String, limit: Int) throws -> [PixivIllustration] {
         var illusts: [PixivIllustration] = []
-        var result = try self._aapi.user_illusts(user_id: Int(user) != nil ? Int(user)! : self.get_id_from_name(username: user))
+        let userID = Int(user) != nil ? Int(user)! : self.get_id_from_name(username: user)
+        var result = try self._aapi.user_illusts(user_id: userID)
         while true {
             illusts = aapi_collect(result: result, targetCollection: illusts, limit: limit)
             if illusts.count == limit { return illusts }
             let arguments = try! self._aapi.parse_qs(url: result.nextURL?.absoluteString ?? "")
-            result = try self._aapi.user_illusts(user_id: Int(arguments["user_id"] as? String ?? "")!, type: arguments["type"] as! String, filter: arguments["filter"] as! String, offset: illusts.count)
+            result = try self._aapi.user_illusts(user_id: arguments["user_id"] ?? userID, type: arguments["type"], filter: arguments["filter"], offset: illusts.count)
         }
     }
     
