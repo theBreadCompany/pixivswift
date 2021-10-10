@@ -37,6 +37,9 @@ public struct PixivResult: Codable {
 public struct PixivIllustration: Codable {
     
     public var sanityLevel: Int
+    public var ageLimit: IllustrationAgeLimit {
+        return tags.map { $0.name }.contains("R-18") ? .r18 : .all
+    }
     private var createDate: String
     public var creationDate: Date {
         return ISO8601DateFormatter().date(from: createDate)!
@@ -149,4 +152,8 @@ public struct UgoiraMetadata: Codable {
     
     public var zipUrls: UgoiraURLs
     public var frames: [UgoiraFrame]
+}
+
+public enum IllustrationAgeLimit: String, Codable {
+    case all, r18, r18g
 }
