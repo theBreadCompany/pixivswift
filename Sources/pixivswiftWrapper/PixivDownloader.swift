@@ -183,7 +183,7 @@ open class PixivDownloader {
             illusts = aapi_collect(result: result, targetCollection: illusts, limit: limit)
             if illusts.count == limit { return illusts }
             let arguments = try! self._aapi.parse_qs(url: result.nextURL?.absoluteString ?? "")
-            result = try self._aapi.user_bookmarks_illust(user_id: arguments["user_id"] as? Int ?? self._aapi.user_id, restrict: Publicity(rawValue: arguments["restrict"] as? String ?? "") ?? publicity, filter: arguments["filter"] as! String, max_bookmark: arguments["max_bookmark_id"] as? Int, tag: arguments["tag"] as? String)
+            result = try self._aapi.user_bookmarks_illust(user_id: arguments["user_id"] as? Int ?? self._aapi.user_id, restrict: Publicity(rawValue: arguments["restrict"] as? String ?? "") ?? publicity, filter: arguments["filter"] as? String ?? "for_ios", max_bookmark: arguments["max_bookmark_id"] as? Int, tag: arguments["tag"] as? String)
         }
     }
     
