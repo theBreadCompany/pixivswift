@@ -465,7 +465,11 @@ open class PixivDownloader {
     private func zip_to_ugoira(zip: URL, destination: URL, delay: Int) {
         if FileManager().fileExists(atPath: zip.path) {
             let unzipped_url = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true).appendingPathComponent(zip.deletingPathExtension().lastPathComponent, isDirectory: true)
+            
             do {
+                if !FileManager().directoryExists(unzipped_url.path) {
+                    try FileManager.default.createDirectory(at: unzipped_url, withIntermediateDirectories: false)
+                }
                 try Zip.unzipFile(zip, destination: unzipped_url, overwrite: true, password: nil)
             } catch {
                 print("unzip of \(zip.lastPathComponent) failed: \(error.localizedDescription)")
