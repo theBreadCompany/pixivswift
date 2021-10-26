@@ -13,7 +13,7 @@ let package = Package(
     dependencies: [
         //.package(url: "https://github.com/SwiftyJSON/SwiftyJSON.git", from:"5.0.1"),
         .package(url: "https://github.com/phimage/Erik.git", from: "5.1.0"),
-        .package(url: "https://github.com/maparoni/Zip.git", .revisionItem("059e7346082d02de16220cd79df7db18ddeba8c3"))
+        .package(url: "https://github.com/ZipArchive/ZipArchive.git", from: "2.2.3")
     ],
     targets: [
         .target(
@@ -23,7 +23,7 @@ let package = Package(
         ),
         .target(
             name: "pixivswiftWrapper",
-            dependencies: ["pixivswift", "Zip"]
+            dependencies: ["pixivswift", "ZipArchive"]
         )
     ]
 )
