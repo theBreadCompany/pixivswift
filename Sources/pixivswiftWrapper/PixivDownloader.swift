@@ -465,11 +465,13 @@ open class PixivDownloader {
     private func zip_to_ugoira(zip: URL, destination: URL, delay: Int) {
         if FileManager().fileExists(atPath: zip.path) {
             let unzipped_url = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true).appendingPathComponent(zip.deletingPathExtension().lastPathComponent, isDirectory: true)
+
             if !FileManager.default.directoryExists(unzipped_url.path) {
                 try! FileManager.default.createDirectory(at: unzipped_url, withIntermediateDirectories: true)
             }
             if !SSZipArchive.unzipFile(atPath: zip.path, toDestination: unzipped_url.path) {
                 print("Unzipping " + unzipped_url.lastPathComponent + " failed!")
+
             }
             
             let gif_destination = CGImageDestinationCreateWithURL(destination.appendingPathComponent(zip.deletingPathExtension().appendingPathExtension("gif").lastPathComponent) as CFURL, kUTTypeGIF, try! FileManager().contentsOfDirectory(atPath: unzipped_url.path).count, [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]] as CFDictionary)
