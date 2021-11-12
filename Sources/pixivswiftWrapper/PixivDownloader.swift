@@ -446,7 +446,7 @@ open class PixivDownloader {
             img_type = kUTTypeJPEG
         } else if illust_url.absoluteString.contains(".gif") {
             img_type = kUTTypeGIF
-            try! JSONSerialization.data(withJSONObject: JSONSerialization.jsonObject(with: Data(properties.description.utf8), options: []), options: .prettyPrinted).write(to: illust_url.appendingPathExtension("txt"))
+            //try! JSONSerialization.data(withJSONObject: JSONSerialization.jsonObject(with: Data(properties.description.utf8), options: []), options: .prettyPrinted).write(to: illust_url.appendingPathExtension("txt"))
         } else {
             fatalError("unexpected image type")
         }
@@ -490,6 +490,7 @@ open class PixivDownloader {
             CGImageDestinationFinalize(gif_destination!)
             return imgData as Data
     }
+    
     /**
      Dumps the content of a zip file on the disk
      
