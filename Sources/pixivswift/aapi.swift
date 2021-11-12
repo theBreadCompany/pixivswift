@@ -89,7 +89,7 @@ public class AppPixivAPI: BasePixivAPI {
     public func user_detail(user_id: Int, filter: String = "for_ios", req_auth: Bool = true) throws -> PixivResult{
         let url = URL(string: "\(self.hosts)/v1/user/detail")!
         let params = [
-            "user_id": String(user_id),
+            "user_id": user_id.description,
             "filter": filter
         ]
         
@@ -112,14 +112,14 @@ public class AppPixivAPI: BasePixivAPI {
     public func user_illusts(user_id: Int, type: String = "illust", filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult{
         let url = URL(string: "\(self.hosts)/v1/user/illusts")!
         var params = [
-            "user_id": String(user_id),
+            "user_id": user_id.description,
             "filter": filter
         ]
         if !type.isEmpty {
             params["type"] = type
         }
         if let offset = offset {
-            params["offset"] = String(offset)
+            params["offset"] = offset.description
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
@@ -132,20 +132,22 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter user_id: ID of the user
      - Parameter restrict: publicity of the requested content
      - Parameter filter: request for a specific platform
+     - Parameter offset: offset of the requested content
      - Parameter max_bookmark: (optional) highest ID that should be fetched
      - Parameter tag: (optional) name of the requested bookmark collection
      - Parameter req_true: whether the API is required to be authorized
      - returns: the user's bookmarks as a PixivResponse
      */
-    public func user_bookmarks_illust(user_id: Int, restrict: Publicity = .public, filter: String = "for_ios", max_bookmark: Int? = nil, tag: String? = nil, req_true: Bool = true) throws -> PixivResult {
+    public func user_bookmarks_illust(user_id: Int, restrict: Publicity = .public, filter: String = "for_ios", offset: Int = 0, max_bookmark: Int? = nil, tag: String? = nil, req_true: Bool = true) throws -> PixivResult {
         let url = URL(string: "\(self.hosts)/v1/user/bookmarks/illust")!
         var params = [
-            "user_id": String(user_id),
+            "user_id": user_id.description,
             "restrict": restrict.rawValue,
-            "filter": filter
+            "filter": filter,
+            "offset": offset.description
         ]
         if let max_bookmark = max_bookmark {
-            params["max_bookmark_id"] = String(max_bookmark)
+            params["max_bookmark_id"] = max_bookmark.description
         }
         if let tag = tag {
             params["tag"] = tag
@@ -185,14 +187,12 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter req_auth: whether the API is required to be authorized
      - returns: a PixivResponse with the newest content of the illustrations of the users you follow
      */
-    public func illust_follow(restrict: Publicity = .public, offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult{
+    public func illust_follow(restrict: Publicity = .public, offset: Int = 0, req_auth: Bool = true) throws -> PixivResult{
         let url = URL(string: "\(self.hosts)/v2/illust/follow")!
-        var params = [
-            "restrict": restrict.rawValue
+        let params = [
+            "restrict": restrict.rawValue,
+            "offset": offset.description
         ]
-        if let offset = offset {
-            params["offset"] = offset.description
-        }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return self.parse_result(req: result)
@@ -207,7 +207,7 @@ public class AppPixivAPI: BasePixivAPI {
     public func illust_detail(illust_id: Int, req_auth: Bool = true) throws -> PixivResult{
         let url = URL(string: "\(self.hosts)/v1/illust/detail")!
         let params = [
-            "illust_id": String(illust_id)
+            "illust_id": illust_id.description
         ]
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
@@ -225,7 +225,7 @@ public class AppPixivAPI: BasePixivAPI {
     public func illust_comments(illust_id: Int, offset: Int? = nil, include_total_comments: Bool? = nil, req_auth: Bool = true) throws -> PixivResult {
         let url = URL(string: "\(self.hosts)/v1/illust/comments")!
         var params = [
-            "illust_id": String(illust_id)
+            "illust_id": illust_id.description
         ]
         if let offset = offset {
             params["offset"] = offset.description
@@ -250,7 +250,7 @@ public class AppPixivAPI: BasePixivAPI {
     public func illust_related(illust_id: Int, filter: String = "for_ios", seed_illust_ids: Array<Int>? = nil, offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult {
         let url = URL(string: "\(self.hosts)/v2/illust/related")!
         var params = [
-            "illust_id": String(illust_id),
+            "illust_id": illust_id.description,
             "filter": filter,
             "offset": offset == nil ? 0.description : offset!.description
         ]

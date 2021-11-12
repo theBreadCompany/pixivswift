@@ -183,7 +183,7 @@ open class PixivDownloader {
             illusts = aapi_collect(result: result, targetCollection: illusts, limit: limit)
             if illusts.count == limit { return illusts }
             let arguments = try! self._aapi.parse_qs(url: result.nextURL?.absoluteString ?? "")
-            result = try self._aapi.user_bookmarks_illust(user_id: arguments["user_id"] as? Int ?? self._aapi.user_id, restrict: Publicity(rawValue: arguments["restrict"] as? String ?? "") ?? publicity, filter: arguments["filter"] as? String ?? "for_ios", max_bookmark: arguments["max_bookmark_id"] as? Int, tag: arguments["tag"] as? String)
+            result = try self._aapi.user_bookmarks_illust(user_id: arguments["user_id"] as? Int ?? self._aapi.user_id, restrict: Publicity(rawValue: arguments["restrict"] as? String ?? "") ?? publicity, filter: arguments["filter"] as? String ?? "for_ios", offset: arguments["offset"] as? Int ?? illusts.count, max_bookmark: arguments["max_bookmark_id"] as? Int, tag: arguments["tag"] as? String)
         }
     }
     
@@ -396,7 +396,7 @@ open class PixivDownloader {
         }
         return succeededURLs
     }
-
+    
     /**
      Update the metadata of an image
      
@@ -456,25 +456,15 @@ open class PixivDownloader {
     }
     
     /**
-     Convert a given ZIP file with images to an ugoira (GIF) image
+     Convert a given ZIP file with images to an ugoira (GIF) image and saves it to a file
      
      - Parameter zip: path to a zip_file
      - Parameter destination: path to a directory where the resulting GIF will be copied to
      - Parameter delay: delay between each frame of the GIF
      */
     private func zip_to_ugoira(zip: URL, destination: URL, delay: Int) {
-        if FileManager().fileExists(atPath: zip.path) {
-            let unzipped_url = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true).appendingPathComponent(zip.deletingPathExtension().lastPathComponent, isDirectory: true)
-            
-            do {
-                if !FileManager().directoryExists(unzipped_url.path) {
-                    try FileManager.default.createDirectory(at: unzipped_url, withIntermediateDirectories: false)
-                }
-                try Zip.unzipFile(zip, destination: unzipped_url, overwrite: true, password: nil)
-            } catch {
-                print("unzip of \(zip.lastPathComponent) failed: \(error.localizedDescription)")
-                return
-            }
+        do {
+            let unzipped_url = try self.unzip(zipURL: zip)
             
             let gif_destination = CGImageDestinationCreateWithURL(destination.appendingPathComponent(zip.deletingPathExtension().appendingPathExtension("gif").lastPathComponent) as CFURL, kUTTypeGIF, try! FileManager().contentsOfDirectory(atPath: unzipped_url.path).count, [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]] as CFDictionary)
             
@@ -482,8 +472,42 @@ open class PixivDownloader {
                 CGImageDestinationAddImage(gif_destination!, CGImageSourceCreateImageAtIndex(CGImageSourceCreateWithURL(URL(fileURLWithPath: image, relativeTo: unzipped_url) as CFURL, nil)!, 0, nil)!, [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFUnclampedDelayTime as String: Double(delay)/Double(1000)]] as CFDictionary)
             }
             CGImageDestinationFinalize(gif_destination!)
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
+    
+    private func zip_to_ugoira(zip: URL, delay: Int) throws -> Data {
+            let unzipped_url = try self.unzip(zipURL: zip)
+            
+            let imgData = Data() as! CFMutableData
+            
+            let gif_destination = CGImageDestinationCreateWithData(imgData, kUTTypeGIF, try FileManager().contentsOfDirectory(atPath: unzipped_url.path).count, [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]] as CFDictionary)
+            
+            for image in try FileManager().contentsOfDirectory(atPath: unzipped_url.path).sorted() {
+                CGImageDestinationAddImage(gif_destination!, CGImageSourceCreateImageAtIndex(CGImageSourceCreateWithURL(URL(fileURLWithPath: image, relativeTo: unzipped_url) as CFURL, nil)!, 0, nil)!, [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFUnclampedDelayTime as String: Double(delay)/Double(1000)]] as CFDictionary)
+            }
+            CGImageDestinationFinalize(gif_destination!)
+            return imgData as Data
+    }
+    /**
+     Dumps the content of a zip file on the disk
+     
+     - Parameter zipURL: path to the zip file
+     - returns: the URL to the directory containing the contents
+     - throws: ZipError.fileNotFound or ZipError.unzipFailed
+     */
+    private func unzip(zipURL: URL) throws -> URL {
+        if FileManager().fileExists(atPath: zipURL.path) {
+            let unzipped_url = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true).appendingPathComponent(zipURL.deletingPathExtension().lastPathComponent, isDirectory: true)
+            
+            if !FileManager().directoryExists(unzipped_url.path) {
+                try FileManager.default.createDirectory(at: unzipped_url, withIntermediateDirectories: false)
+            }
+            try Zip.unzipFile(zipURL, destination: unzipped_url, overwrite: true, password: nil)
+            return unzipped_url
         } else {
-            print("ZIP for ugoira not existing! Affected path: \(zip)")
+            throw ZipError.fileNotFound
         }
     }
 }
