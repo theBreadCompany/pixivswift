@@ -156,7 +156,8 @@ public class BasePixivAPI {
             } catch PixivError.badProgramming /* 400 is generally a bad request, so a login error is a more specific version of that */ {
                 throw PixivError.AuthErrors.authFailed("auth() failed! check refresh_token.")
             }
-            token = self.parse_json(json: r.description)["response"]! as! Dictionary<String, Any>
+            guard let _token = self.parse_json(json: r.description)["response"] as? Dictionary<String, Any> else { throw PixivError.AuthErrors.authFailed("Response failed for unknown reasons! Result: \(self.parse_json(json: r.description))") }
+            token = _token
         } else {
             throw PixivError.badProgramming(misstake: "auth() has been called, but without any credentials or refresh_token")
         }
