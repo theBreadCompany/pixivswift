@@ -13,7 +13,8 @@ public enum PixivError: Error {
     
     case RateLimitError
     case badProgramming(misstake: String)
-    case targetNotFound(target: String)
+    case targetNotFound(String)
+    case responseAcquirationFailed(String)
     public enum AuthErrors: Error {
         case missingAuth(String?)
         case authFailed(String)
@@ -32,8 +33,8 @@ public enum HttpMethod: String {
 extension String {
     var MD5: String {
         if #available(macOS 10.15,iOS 13, *) {
-        let computed = Insecure.MD5.hash(data: self.data(using: .utf8)!)
-        return computed.map { String(format: "%02hhx", $0) }.joined()
+            let computed = Insecure.MD5.hash(data: self.data(using: .utf8)!)
+            return computed.map { String(format: "%02hhx", $0) }.joined()
         } else {
             // thanks to https://stackoverflow.com/a/55346435
             let length = Int(CC_MD5_DIGEST_LENGTH)
@@ -42,7 +43,6 @@ extension String {
             if let d = self.data(using: .utf8) {
                 _ = d.withUnsafeBytes { body -> String in
                     CC_MD5(body.baseAddress, CC_LONG(d.count), &digest)
-
                     return ""
                 }
             }
