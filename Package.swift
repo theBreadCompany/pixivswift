@@ -18,7 +18,7 @@ let package = Package(
     targets: [
         .target(
             name: "pixivswift",
-            dependencies: [ /*"SwiftyJSON",*/ "Erik" ], // headless login only makes sense on headless environments like CLIs
+            dependencies: [ .productItem(name: "Erik", package: "Erik", condition: .when(platforms: [.linux, .windows, .macOS])) ], // headless login only makes sense in headless environments (CLIs)
             exclude: ["papi.swift"]
         ),
         .target(
