@@ -13,7 +13,6 @@ import pixivswift
 
 
 #if canImport(UIKit)
-import UIKit
 let kUTTypePNG = "public.png" as CFString
 let kUTTypeGIF = "com.compuserve.gif" as CFString
 let kUTTypeJPEG = "public.jpeg" as CFString
@@ -267,15 +266,12 @@ open class PixivDownloader {
      Search for illustrations
      
      - Parameter query: terms to search for
-     - Parameter mode: search filter; valid modes: "tag", "exact_tag", "text", "caption"
-     - Parameter period: period of time where the illustrations where published; valid periods: "all", "day", "week", "month"
-     - Parameter order: order the illustrations should be listed; valid orders: "desc", "asc"
+     - Parameter searchMode: detail accuracy filter
+     - Parameter sortMode: whether to sort by date or by popularity (adcending or descending respectivly)
      - Parameter limit: hard illustration count limit
      
      - returns: a list of PixivIllustration objects
-     
-     NOTE: this is the only PublicAPI method in this class as it also provides sorting by popularity, which the corresponding AppAPI method doesnt
-     
+     - Note: The popularity filters will only work if the account is authorized for premium; server will otherwise default to date
      */
     open func search(query: String, searchMode: AppPixivAPI.SearchMode = .partial_match_for_tags, sortMode: AppPixivAPI.SortMode = .popular_desc, limit: Int) throws -> [PixivIllustration]{
         var illusts: [PixivIllustration] = []
@@ -324,12 +320,12 @@ open class PixivDownloader {
     }
     
     private func get_id_from_name(username: String) throws -> Int {
-        let result = try self._aapi.search_user(word: username).userPreviews!.first!.user
+        guard let result = try self._aapi.search_user(word: username).userPreviews?.first?.user else { throw PixivError.targetNotFound(username) }
         let result_name = result.name
         if result_name.lowercased() == username.lowercased() || result_name.lowercased().contains(username.lowercased()) || username.lowercased().contains(result_name.lowercased()) {
             return result.id
         } else {
-            throw PixivError.targetNotFound(target: username)
+            throw PixivError.targetNotFound(username)
         }
     }
     
