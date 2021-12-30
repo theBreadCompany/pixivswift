@@ -7,6 +7,7 @@
 
 #if canImport(Erik)
 import Erik
+#endif
 import WebKit
 import CryptoKit
 import Foundation
@@ -71,6 +72,8 @@ extension BasePixivAPI {
         }
         return response
     }
+    
+    #if canImport(Erik)
     
     func login(username: String, password: String) throws -> String {
         var shouldKeepRunning = true
@@ -155,6 +158,8 @@ extension BasePixivAPI {
             return response
         }
     }
+    
+    #endif
 }
 
 fileprivate class pixivURLHandler: NSObject, WKURLSchemeHandler {
@@ -175,5 +180,3 @@ enum HeadlessLoginError: Error {
     case badCredentials
     case recognition
 }
-
-#endif

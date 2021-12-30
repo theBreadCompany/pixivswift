@@ -34,55 +34,54 @@ public class BasePixivAPI {
     }
     
     
-    public func parse_json(json: String) -> Dictionary<String, Any> {
-        do {
-            return try JSONSerialization.jsonObject(with: Data(json.utf8), options: []) as! Dictionary<String, Any>
-        } catch {
+    internal func parse_json(json: String) -> Dictionary<String, Any> {
+        if let jsonData = try? JSONSerialization.jsonObject(with: Data(json.utf8), options: []) as? Dictionary<String, Any> {
+            return jsonData
+        } else {
             return Dictionary<String, Any>()
         }
     }
     
-    public func parse_date(_ date: Date) -> String {
+    internal func parse_date(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "YYYY-MM-dd"
         return formatter.string(from: date)
     }
     
     /**
-     throw exception if there is access token
+     throw exception if there is no access token
      */
-    public func require_auth() throws {
+    internal func require_auth() throws {
         if self.access_token.isEmpty {
             throw PixivError.AuthErrors.missingAuth("Authentication required! Call login() or set_auth() first!")
         }
     }
     
-    public func requests_call(method: HttpMethod, url: URL, headers: Dictionary<String, Any> = [:], params: Dictionary<String, Any> = [:], data: Dictionary<String, Any> = [:], stream: Bool = false) throws -> String {
-        var response: HTTPURLResponse = HTTPURLResponse()
-        var response_data: String = ""
+    internal func requests_call(method: HttpMethod, url: URL, headers: Dictionary<String, Any> = [:], params: Dictionary<String, Any> = [:], data: Dictionary<String, Any> = [:], stream: Bool = false) throws -> String {
         
         var _url = URLComponents(url: url, resolvingAgainstBaseURL: false)
         _url?.queryItems = params.map { URLQueryItem(name: $0, value: ($1 as! String)) }
-        var task = URLRequest(url: URL(string: _url!.string!)!)
-        task.allHTTPHeaderFields = (headers as! [String:String])
-        task.httpMethod = method.rawValue
+        guard let queryURL = _url?.url else { throw PixivError.responseAcquirationFailed("Failed to build URL!") }
+        var req = URLRequest(url: queryURL)
+        req.allHTTPHeaderFields = (headers as! [String:String])
+        req.httpMethod = method.rawValue
         
         if !data.isEmpty {
             var components = URLComponents()
             components.queryItems = data.map( {URLQueryItem(name: $0.key, value: ($0.value as! String))} )
-            task.httpBody = components.url!.query!.data(using: .utf8)
+            req.httpBody = components.url!.query!.data(using: .utf8)
         }
         
-        let _ = URLSession.shared.dataTask(with: task ) { data, _response, error in
+        var responseData: String = ""
+        let task = URLSession.shared.dataTask(with: req ) { data, _response, error in
             guard let data = data, error == nil else { return }
-            response = _response as! HTTPURLResponse
-            response_data = String(data: data, encoding: .utf8)!
-        }.resume()
-        
-        
-        while response_data.isEmpty {
-            continue
+            responseData = String(data: data, encoding: .utf8) ?? ""
         }
+        task.resume()
+        while task.state == .running {}
+        
+        guard !responseData.isEmpty else { throw PixivError.responseAcquirationFailed("No response data!") }
+        guard let response = task.response as? HTTPURLResponse else { throw PixivError.responseAcquirationFailed("Response conversion failed!") }
         
         switch response.statusCode {
         case 200, 301, 302:
@@ -90,13 +89,13 @@ public class BasePixivAPI {
         case 400:
             throw PixivError.badProgramming(misstake: "Bad request!")
         case 403:
-            if response_data.contains("Rate Limit") { throw PixivError.RateLimitError }
+            throw PixivError.RateLimitError
         case 404:
-            throw PixivError.targetNotFound(target: data.description)
+            throw PixivError.targetNotFound(data.description)
         default:
-            throw PixivError.unknownException("Request failed with HTTP Error \(response.statusCode); response: \(response_data)")
+            throw PixivError.unknownException("Request failed with HTTP Error \(response.statusCode); response: \(response)")
         }
-        return response_data
+        return responseData
     }
     
     public func set_auth(access_token: String, refresh_token: String? = nil) {
@@ -109,7 +108,17 @@ public class BasePixivAPI {
         self.client_secret = client_secret
     }
     
+    #if canImport(Erik)
     public func auth(username: String = "", password: String = "", refresh_token: String = "") throws -> Dictionary<String, Any> {
+        try self._auth(username: username, password: password, refresh_token: refresh_token)
+    }
+    #else
+    public func auth(refresh_token: String = "") throws -> Dictionary<String, Any> {
+        try self._auth(refresh_token: refresh_token)
+    }
+    #endif
+    
+    private func _auth(username: String = "", password: String = "", refresh_token: String = "") throws -> Dictionary<String, Any> {
         let formatter = DateFormatter()
         formatter.setLocalizedDateFormatFromTemplate("y-m-dTH:m:s+00:00")
         let local_time = formatter.string(from: Date())
@@ -134,41 +143,44 @@ public class BasePixivAPI {
             "client_secret": self.client_secret,
         ] as [String : String]
         
-        let token: Dictionary<String, Any>
+        var token: Dictionary<String, Any> = [:]
+        if !refresh_token.isEmpty || !self.refresh_token.isEmpty {
+            data["grant_type"] = "refresh_token"
+            data["refresh_token"] = !refresh_token.isEmpty ? refresh_token : self.refresh_token
+            
+            guard let r = try? self.requests_call(method: .POST, url: url, headers: headers, data: data) else {
+                throw PixivError.AuthErrors.authFailed("auth() failed! check refresh_token.")
+            }
+            guard let _token = self.parse_json(json: r.description)["response"] as? Dictionary<String, Any> else {
+                throw PixivError.AuthErrors.authFailed("Response failed for unknown reasons! Result: \(self.parse_json(json: r.description))")
+            }
+            token = _token
+        }
+#if canImport(Erik)
         if !username.isEmpty && !password.isEmpty {
             do {
                 token = try self.parse_json(json: self.login(username: username, password: password))
             } catch let e {
                 if e as? HeadlessLoginError == HeadlessLoginError.recognition {
-                    Thread.sleep(forTimeInterval: .init(10)) // wait then retry, mostly works
+                    Thread.sleep(forTimeInterval: .init(10)) // wait then retry, usually works
                     token = try self.parse_json(json: self.login(username: username, password: password))
                 } else {
                     throw e
                 }
             }
-        } else if !refresh_token.isEmpty || !self.refresh_token.isEmpty {
-            data["grant_type"] = "refresh_token"
-            data["refresh_token"] = !refresh_token.isEmpty ? refresh_token: self.refresh_token
-            
-            let r: String
-            do {
-                r = try self.requests_call(method: .POST, url: url, headers: headers, data: data)
-            } catch PixivError.badProgramming /* 400 is generally a bad request, so a login error is a more specific version of that */ {
-                throw PixivError.AuthErrors.authFailed("auth() failed! check refresh_token.")
-            }
-            guard let _token = self.parse_json(json: r.description)["response"] as? Dictionary<String, Any> else { throw PixivError.AuthErrors.authFailed("Response failed for unknown reasons! Result: \(self.parse_json(json: r.description))") }
-            token = _token
-        } else {
+        }
+#endif
+        if token.isEmpty {
             throw PixivError.badProgramming(misstake: "auth() has been called, but without any credentials or refresh_token")
         }
-
-        // I hate native JSON handling rofl.
+        
+        // I hate native JSON.
         if let _access_token = token["access_token"] as? String, let _user_id = Int((token["user"] as? Dictionary<String, Any>)?["id"] as? String ?? "") , let _refresh_token = token["refresh_token"] as? String {
             self.access_token = _access_token
             self.user_id = _user_id
             self.refresh_token = _refresh_token
         }
-
+        
         return token
     }
     
@@ -183,7 +195,7 @@ public class BasePixivAPI {
      - returns: whether the download succeeded
      */
     public func download(url: URL, prefix: String = "", path: URL = URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true), name: String? = nil, replace: Bool = false, referer: URL = URL(string: "https://app-api.pixiv.net")!) -> Bool{
-        var _name = ""
+        var _name: String
         if let name = name {
             _name = name
         } else {
@@ -192,22 +204,21 @@ public class BasePixivAPI {
         
         if !_name.isEmpty {
             _name = prefix + _name
-            let targetURL = URL(string: "file:///\(path.path)/\(_name)")!.absoluteURL  // this looks very bad, and it probably is, but it works; the correct way doesnt work (for me at least)
+            let targetURL = path.appendingPathComponent(_name).absoluteURL
             
             if FileManager.default.fileExists(atPath: targetURL.path) { return true }
             
-            var task = URLRequest(url: url)
-            task.allHTTPHeaderFields = ["Referer": referer.absoluteString]
-            var error_occured = false
-            var lock = true
-            let _ = URLSession.shared.dataTask(with: task) { data, r, error in
-                guard let data = data, error == nil else { error_occured = true; lock = false; return }
-                guard let _ = try? data.write(to: targetURL) else { error_occured = true; lock = false; return }
-                lock = false
+            var req = URLRequest(url: url)
+            req.allHTTPHeaderFields = ["Referer": referer.absoluteString]
+            let task = URLSession.shared.downloadTask(with: req) { url, r, error in
+                guard let url = url, error == nil else { return }
+                guard let _ = try? FileManager.default.moveItem(at: url, to: targetURL) else { return }
                 
-            }.resume()
-            while lock { }
-            return !error_occured
+                
+            }
+            task.resume()
+            while task.state != .completed { }
+            return (task.error == nil)
             
         }
         return false
