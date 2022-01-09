@@ -78,7 +78,7 @@ public class BasePixivAPI {
             responseData = String(data: data, encoding: .utf8) ?? ""
         }
         task.resume()
-        while task.state == .running {}
+        while task.state == .running || (task.error == nil && responseData.isEmpty) {}
         
         guard !responseData.isEmpty else { throw PixivError.responseAcquirationFailed("No response data!") }
         guard let response = task.response as? HTTPURLResponse else { throw PixivError.responseAcquirationFailed("Response conversion failed!") }
