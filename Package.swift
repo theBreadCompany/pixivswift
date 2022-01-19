@@ -24,6 +24,10 @@ let package = Package(
         .target(
             name: "pixivswiftWrapper",
             dependencies: ["pixivswift", "Zip"]
+        ),
+        .testTarget(
+            name: "pixivswiftTests",
+            dependencies: ["pixivswift"]
         )
     ]
 )
