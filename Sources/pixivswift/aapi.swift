@@ -10,9 +10,13 @@ import Foundation
 
 /**
  This class provides functions similiar to the ones used in the official Pixiv App.
+ It is strongly recommended to `auth` the instance before using any API calls.
  */
 public class AppPixivAPI: BasePixivAPI {
     
+    /**
+     Initialize a new `ÀppPixivAPI` instance
+     */
     public override init() {
         super.init()
         self.hosts = "https://app-api.pixiv.net"
@@ -558,7 +562,7 @@ public class AppPixivAPI: BasePixivAPI {
     }
     
     /**
-     (*)*)
+     fetch tags the a given user uses to structure their bookmarks
      - Parameter restrict: publicity of the tags
      - Parameter offset:(optional) offset of the requested tags
      - Parameter req_auth: whether the API is required to be authorized
