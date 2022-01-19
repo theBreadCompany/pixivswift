@@ -20,13 +20,16 @@ let kUTTypeJPEG = "public.jpeg" as CFString
 
 private let TOKEN_LIFETIME = 2700
 
+
 open class PixivDownloader {
     
     public let auto_relogin: Bool
     
     public let _aapi: AppPixivAPI
     
-    public var authed: Bool
+    public var authed: Bool {
+        !self._aapi.refresh_token.isEmpty
+    }
     public var last_login: Date?
     
     public var refresh_token: String?
@@ -36,7 +39,6 @@ open class PixivDownloader {
         
         self._aapi = AppPixivAPI()
         
-        self.authed = false
         self.last_login = nil
         
         self.refresh_token = nil
@@ -49,7 +51,6 @@ open class PixivDownloader {
         
         self._aapi = AppPixivAPI()
         
-        self.authed = false
         self.last_login = nil
         
         self.refresh_token = nil
@@ -57,7 +58,11 @@ open class PixivDownloader {
         self.login(refresh_token: refresh_token)
     }
     
-    
+    #if canImport(Erik)
+    public func login(username: String? = nil, password: String? = nil, refresh_token: String? = nil) { self._login(username: username, password: password, refresh_token: refresh_token) }
+    #else
+    public func login(refresh_token: String? = nil) { self._login(refresh_token: refresh_token) }
+    #endif
     /**
      Login
      
@@ -65,25 +70,21 @@ open class PixivDownloader {
      - Parameter password: the password of your account
      - Parameter refresh_token: a refresh\_token that grants access to your account
      */
-    open func login(username: String? = nil, password: String? = nil, refresh_token: String? = nil) {
+    private func _login(username: String? = nil, password: String? = nil, refresh_token: String? = nil) {
         
         if let refresh_token = refresh_token {
             do {
                 let _ = try self._aapi.auth(refresh_token: refresh_token)
                 self.refresh_token = refresh_token
-                self.authed = true
             } catch {
-                print("Login failed")
-                self.authed = false
+                NSLog("Login failed")
             }
         } else if let username = username, let password = password {
             do {
                 let _ = try self._aapi.auth(username: username, password: password)
                 self.refresh_token = self._aapi.refresh_token
-                self.authed = true
             } catch {
                 print("Login failed")
-                self.authed = false
             }
         }
         
@@ -508,3 +509,7 @@ open class PixivDownloader {
         }
     }
 }
+
+@available(macOS 10.15, *)
+extension PixivDownloader: ObservableObject {}
+
