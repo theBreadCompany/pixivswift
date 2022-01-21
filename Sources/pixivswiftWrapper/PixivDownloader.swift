@@ -79,7 +79,9 @@ open class PixivDownloader {
             } catch {
                 NSLog("Login failed")
             }
-        } else if let username = username, let password = password {
+        }
+        #if canImport(Erik)
+        if let username = username, let password = password {
             do {
                 let _ = try self._aapi.auth(username: username, password: password)
                 self.refresh_token = self._aapi.refresh_token
@@ -87,6 +89,7 @@ open class PixivDownloader {
                 print("Login failed")
             }
         }
+        #endif
         
         self.last_login = Date()
     }
@@ -510,6 +513,6 @@ open class PixivDownloader {
     }
 }
 
-@available(macOS 10.15, *)
+@available(macOS 10.15, iOS 13, *)
 extension PixivDownloader: ObservableObject {}
 
