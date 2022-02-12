@@ -10,4 +10,5 @@ import Foundation
 public enum TestErrors: Error {
     case loginFailed
     case noBookmarks
+    case missingQueryData
 }
