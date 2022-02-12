@@ -28,11 +28,16 @@ extension PixivResult: Equatable {
      - Parameter lhs: a `PixivResult`
      - Parameter rhs: a `PixivResult`
      - returns: a `PixivResult` containing the items of both results
+     
+     As there is only one `nextURL` and `ugoiraMetadata` property,
+     one has to overwrite the other, so `rhs` overwrites `lhs`
      */
     public static func + (lhs: PixivResult, rhs: PixivResult) -> PixivResult {
         var lhs = lhs
         lhs.userPreviews?.append(contentsOf: rhs.userPreviews ?? [])
         lhs.illusts?.append(contentsOf: rhs.illusts ?? [])
+        lhs.nextURL = rhs.nextURL ?? lhs.nextURL
+        lhs.ugoiraMetadata = rhs.ugoiraMetadata ?? lhs.ugoiraMetadata
         return lhs
     }
     
