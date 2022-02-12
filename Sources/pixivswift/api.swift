@@ -87,7 +87,7 @@ public class BasePixivAPI {
         case 200, 301, 302:
             break
         case 400:
-            throw PixivError.badProgramming(misstake: "Bad request!")
+            throw PixivError.responseAcquirationFailed("Bad request!")
         case 403:
             throw PixivError.RateLimitError
         case 404:
@@ -171,7 +171,7 @@ public class BasePixivAPI {
         }
 #endif
         if token.isEmpty {
-            throw PixivError.badProgramming(misstake: "auth() has been called, but without any credentials or refresh_token")
+            throw PixivError.AuthErrors.authFailed( "auth() has been called, but without any credentials or refresh_token")
         }
         
         // I hate native JSON.
@@ -194,7 +194,7 @@ public class BasePixivAPI {
      - Parameter referer: a referer the URLRequest should refer to, default is recommended
      - returns: whether the download succeeded
      */
-    public func download(url: URL, prefix: String = "", path: URL = URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true), name: String? = nil, replace: Bool = false, referer: URL = URL(string: "https://app-api.pixiv.net")!) -> Bool{
+    public func download(url: URL, prefix: String = "", path: URL = URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true), name: String? = nil, replace: Bool = false, referer: URL = URL(string: "https://app-api.pixiv.net/")!) -> Bool{
         var _name: String
         if let name = name {
             _name = name

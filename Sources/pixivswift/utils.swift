@@ -9,16 +9,23 @@ import Foundation
 import CryptoKit
 import CommonCrypto
 
+/// `Error`s that may occur when (trying to) interface with pixiv
 public enum PixivError: Error {
     
+    /// Occurs when the server receives to many requests in a too short time
     case RateLimitError
-    case badProgramming(misstake: String)
+    /// Server doesn't know about this thing.
     case targetNotFound(String)
+    /// Mostly Framework-internal error; occurs, when, well, no data
     case responseAcquirationFailed(String)
+    /// `Errors` that may occur especially in the authorization process
     public enum AuthErrors: Error {
+        /// tried to access the API without any authorization
         case missingAuth(String?)
+        /// failed when trying to authorize
         case authFailed(String)
     }
+    /// unknown/undefined situation
     case unknownException(String)
 }
 
