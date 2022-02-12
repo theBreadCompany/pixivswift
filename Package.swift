@@ -28,6 +28,10 @@ let package = Package(
         .testTarget(
             name: "pixivswiftTests",
             dependencies: ["pixivswift"]
-        )
+        ),
+        .testTarget(
+            name: "pixivswiftWrapperTests",
+            dependencies: ["pixivswiftWrapper"]
+        ),
     ]
 )
