@@ -15,7 +15,10 @@ import Foundation
 public class AppPixivAPI: BasePixivAPI {
     
     /**
-     Initialize a new `ÀppPixivAPI` instance
+     Initialize a new _unauthorized_ `AppPixivAPI` instance
+     
+     The `.auth(username:password:refresh_token:)` method of the new instance
+     has to be called with valid credentials first before it is allowed to interact with the API.
      */
     public override init() {
         super.init()
@@ -42,13 +45,7 @@ public class AppPixivAPI: BasePixivAPI {
             return try self.requests_call(method: method, url: url, headers: _headers, params: params, data: data)
         }
     }
-    
-    /* old 'parser'
-    private func parse_result(req: String) -> PixivResult {
-        let result = self.parse_json(json: req.description)
-        return result
-    }
-     */
+
     private func parse_result(req: String) -> PixivResult {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -62,14 +59,12 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter url: the next\_url to get components from
      - returns: the components as a PixivResponse dictionary
      */
-    public func parse_qs(url: String) throws -> Dictionary<String, Any> {
+    public func parse_qs(url: URL?) -> Dictionary<String, Any> {
         var result: Dictionary<String, Any> = [:]
         
-        if url.isEmpty {
-            return result
-        }
+        guard let url = url else { return result }
         
-        for component in URLComponents(string: url)!.queryItems! {
+        for component in URLComponents(url: url, resolvingAgainstBaseURL: false)!.queryItems! {
             if let ob = component.name.firstIndex(of: "["), let cb = component.name.firstIndex(of: "]") {
                 var _component = component
                 _component.name.removeSubrange(ob...cb)
@@ -779,15 +774,33 @@ public class AppPixivAPI: BasePixivAPI {
 
 extension AppPixivAPI {
     
+    /// `struct` defining several strategies to let the server sort content
     public enum SortMode: String {
-        case date_asc, date_desc, popular_desc
+        /// oldest content first
+        case date_asc
+        /// newest content first
+        case date_desc
+        /// most popular content first; _premium feature_; defaults to date\_desc if not premium
+        case popular_desc
     }
     
+    /// `struct` defining tolerances for searches via `AppPixivAPI.search_illust(word:search_target:sort:duration:start_date:end_date:filter:offset:req_auth:)`
     public enum SearchMode: String {
-        case partial_match_for_tags, exact_match_for_tags, title_and_caption
+        /// applies if post _also contains_ specified `word`s
+        case partial_match_for_tags
+        /// applies if post _only contains_ specified `word`s
+        case exact_match_for_tags
+        /// applies if `word`s are found in title and caption of the post
+        case title_and_caption
     }
     
+    /// `struct` defining the search perios for searches via `AppPixivAPI.search_illust(word:search_target:sort:duration:start_date:end_date:filter:offset:req_auth:)`
     public enum Duration: String {
-        case within_last_day, within_last_week, within_last_month
+        /// only search for posts published in the last 24 h
+        case within_last_day
+        /// only search for posts published in the last 7 days
+        case within_last_week
+        /// only search for posts published in the last 30 days
+        case within_last_month
     }
 }

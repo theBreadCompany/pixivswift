@@ -166,7 +166,7 @@ open class PixivDownloader {
                     return illusts
                 }
             }
-            let arguments = try! self._aapi.parse_qs(url: result.nextURL?.absoluteString ?? "") // AA FORGOT TO EDIT PARSE_QS
+            let arguments = self._aapi.parse_qs(url: result.nextURL) // AA FORGOT TO EDIT PARSE_QS
             result = try self._aapi.illust_follow(restrict: Publicity(rawValue: arguments["restrict"] as? String ?? "") ?? publicity, offset: count)
         }
     }
@@ -185,7 +185,7 @@ open class PixivDownloader {
         while true {
             illusts = aapi_collect(result: result, targetCollection: illusts, limit: limit)
             if illusts.count == limit { return illusts }
-            let arguments = try! self._aapi.parse_qs(url: result.nextURL?.absoluteString ?? "")
+            let arguments = self._aapi.parse_qs(url: result.nextURL)
             result = try self._aapi.user_bookmarks_illust(user_id: arguments["user_id"] as? Int ?? self._aapi.user_id, restrict: Publicity(rawValue: arguments["restrict"] as? String ?? "") ?? publicity, filter: arguments["filter"] as? String ?? "for_ios", offset: arguments["offset"] as? Int ?? illusts.count, max_bookmark: arguments["max_bookmark_id"] as? Int, tag: arguments["tag"] as? String)
         }
     }
@@ -241,7 +241,7 @@ open class PixivDownloader {
         while true {
             illusts = aapi_collect(result: result, targetCollection: illusts, limit: limit)
             if illusts.count == limit { return illusts }
-            let arguments = try! self._aapi.parse_qs(url: result.nextURL?.absoluteString ?? "")
+            let arguments = self._aapi.parse_qs(url: result.nextURL)
             result = try self._aapi.illust_recommended(content_type: arguments["content_type"] as! String, include_ranking_label: arguments["include_ranking_label"] as! Bool, filter: arguments["filter"] as! String, max_bookmark_id_for_recommend: arguments["max_bookmark_id_for_recommend"] as? Int, offset: illusts.count, include_ranking_illusts: arguments["include_ranking_ilusts"] as? Bool, include_privacy_policy: arguments["include_privacy_policy"] as? Bool)
         }
     }
@@ -259,9 +259,10 @@ open class PixivDownloader {
         let userID: Int = Int(user) != nil ? Int(user)! : try self.get_id_from_name(username: user)
         var result = try self._aapi.user_illusts(user_id: userID)
         while true {
+            illusts.append(contentsOf: (result.illusts ?? [])[0...limit-illusts.count])
             illusts = aapi_collect(result: result, targetCollection: illusts, limit: limit)
             if illusts.count == limit { return illusts }
-            let arguments = try! self._aapi.parse_qs(url: result.nextURL?.absoluteString ?? "")
+            let arguments = self._aapi.parse_qs(url: result.nextURL)
             result = try self._aapi.user_illusts(user_id: arguments["user_id"] as? Int ?? userID, type: arguments["type"] as? String ?? "illusts", filter: arguments["filter"] as? String ?? "for_ios", offset: illusts.count)
         }
     }
@@ -317,8 +318,8 @@ open class PixivDownloader {
         var result = try self._aapi.illust_related(illust_id: illust_id)
         while true {
             illusts = aapi_collect(result: result, targetCollection: illusts, limit: limit)
-            if illusts.count == limit || (result.nextURL?.absoluteString ?? "").isEmpty { return illusts }
-            let arguments = try! self._aapi.parse_qs(url: result.nextURL?.absoluteString ?? "")
+            if illusts.count == limit || result.nextURL != nil { return illusts }
+            let arguments = self._aapi.parse_qs(url: result.nextURL)
             result = try self._aapi.illust_related(illust_id: arguments["illust_id"] as! Int, filter: arguments["filter"] as! String, offset: illusts.count)
         }
     }
@@ -446,7 +447,7 @@ open class PixivDownloader {
             img_type = kUTTypeJPEG
         } else if illust_url.absoluteString.contains(".gif") {
             img_type = kUTTypeGIF
-            //try! JSONSerialization.data(withJSONObject: JSONSerialization.jsonObject(with: Data(properties.description.utf8), options: []), options: .prettyPrinted).write(to: illust_url.appendingPathExtension("txt"))
+            //try JSONSerialization.data(withJSONObject: JSONSerialization.jsonObject(with: Data(properties.description.utf8), options: []), options: .prettyPrinted).write(to: illust_url.appendingPathExtension("txt"))
         } else {
             fatalError("unexpected image type")
         }
@@ -466,9 +467,9 @@ open class PixivDownloader {
         do {
             let unzipped_url = try self.unzip(zipURL: zip)
             
-            let gif_destination = CGImageDestinationCreateWithURL(destination.appendingPathComponent(zip.deletingPathExtension().appendingPathExtension("gif").lastPathComponent) as CFURL, kUTTypeGIF, try! FileManager().contentsOfDirectory(atPath: unzipped_url.path).count, [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]] as CFDictionary)
+            let gif_destination = CGImageDestinationCreateWithURL(destination.appendingPathComponent(zip.deletingPathExtension().appendingPathExtension("gif").lastPathComponent) as CFURL, kUTTypeGIF, try FileManager().contentsOfDirectory(atPath: unzipped_url.path).count, [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]] as CFDictionary)
             
-            for image in try! FileManager().contentsOfDirectory(atPath: unzipped_url.path).sorted() {
+            for image in try FileManager().contentsOfDirectory(atPath: unzipped_url.path).sorted() {
                 CGImageDestinationAddImage(gif_destination!, CGImageSourceCreateImageAtIndex(CGImageSourceCreateWithURL(URL(fileURLWithPath: image, relativeTo: unzipped_url) as CFURL, nil)!, 0, nil)!, [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFUnclampedDelayTime as String: Double(delay)/Double(1000)]] as CFDictionary)
             }
             CGImageDestinationFinalize(gif_destination!)
