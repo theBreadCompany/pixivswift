@@ -186,7 +186,7 @@ open class PixivDownloader {
             illusts = aapi_collect(result: result, targetCollection: illusts, limit: limit)
             if illusts.count == limit { return illusts }
             let arguments = self._aapi.parse_qs(url: result.nextURL)
-            result = try self._aapi.user_bookmarks_illust(user_id: arguments["user_id"] as? Int ?? self._aapi.user_id, restrict: Publicity(rawValue: arguments["restrict"] as? String ?? "") ?? publicity, filter: arguments["filter"] as? String ?? "for_ios", offset: arguments["offset"] as? Int ?? illusts.count, max_bookmark: arguments["max_bookmark_id"] as? Int, tag: arguments["tag"] as? String)
+            result = try self._aapi.user_bookmarks_illust(user_id: Int(arguments["user_id"] as? String ?? "x") ?? self._aapi.user_id, restrict: Publicity(rawValue: arguments["restrict"] as? String ?? "") ?? publicity, filter: arguments["filter"] as? String ?? "for_ios", max_bookmark: Int(arguments["max_bookmark_id"] as? String ?? "x"), tag: arguments["tag"] as? String)
         }
     }
     
@@ -242,7 +242,7 @@ open class PixivDownloader {
             illusts = aapi_collect(result: result, targetCollection: illusts, limit: limit)
             if illusts.count == limit { return illusts }
             let arguments = self._aapi.parse_qs(url: result.nextURL)
-            result = try self._aapi.illust_recommended(content_type: arguments["content_type"] as! String, include_ranking_label: arguments["include_ranking_label"] as! Bool, filter: arguments["filter"] as! String, max_bookmark_id_for_recommend: arguments["max_bookmark_id_for_recommend"] as? Int, offset: illusts.count, include_ranking_illusts: arguments["include_ranking_ilusts"] as? Bool, include_privacy_policy: arguments["include_privacy_policy"] as? Bool)
+            result = try self._aapi.illust_recommended(content_type: arguments["content_type"] as! String, include_ranking_label: arguments["include_ranking_label"] as! Bool, filter: arguments["filter"] as! String, max_bookmark_id_for_recommend: Int(arguments["max_bookmark_id_for_recommend"] as? String ?? "x"), offset: illusts.count, include_ranking_illusts: arguments["include_ranking_ilusts"] as? Bool, include_privacy_policy: arguments["include_privacy_policy"] as? Bool)
         }
     }
     
@@ -263,7 +263,7 @@ open class PixivDownloader {
             illusts = aapi_collect(result: result, targetCollection: illusts, limit: limit)
             if illusts.count == limit { return illusts }
             let arguments = self._aapi.parse_qs(url: result.nextURL)
-            result = try self._aapi.user_illusts(user_id: arguments["user_id"] as? Int ?? userID, type: arguments["type"] as? String ?? "illusts", filter: arguments["filter"] as? String ?? "for_ios", offset: illusts.count)
+            result = try self._aapi.user_illusts(user_id: Int(arguments["user_id"] as? String ?? "x") ?? userID, type: arguments["type"] as? String ?? "illusts", filter: arguments["filter"] as? String ?? "for_ios", offset: illusts.count)
         }
     }
     
