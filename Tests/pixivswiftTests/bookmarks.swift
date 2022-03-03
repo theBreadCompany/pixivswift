@@ -32,10 +32,11 @@ extension pixivswiftTests {
             if r.illusts?.count ?? 1 == 30 {
                 if let nextURL = r.nextURL {
                     let arguments = self.aapi.parse_qs(url: nextURL)
-                    guard let user_id = Int(arguments["user_id"] as? String ?? "x") else { throw TestErrors.missingQueryData}
+                    guard let user_id = Int(arguments["user_id"] as? String ?? "x"), let max_bookmark = Int(arguments["max_bookmark_id"] as? String ?? "x")  else { throw TestErrors.missingQueryData}
                     let r_bac = r
-                    r += try self.aapi.user_bookmarks_illust(user_id: user_id)
+                    r += try self.aapi.user_bookmarks_illust(user_id: user_id, max_bookmark: max_bookmark)
                     XCTAssertNotEqual(r.illusts?.count, r_bac.illusts?.count)
+                    XCTAssertNotEqual(r.illusts, r_bac.illusts)
                 }
             }
         }())
