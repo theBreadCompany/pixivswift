@@ -15,3 +15,15 @@ public extension FileManager {
         return exists && isDirectory.boolValue
     }
 }
+
+public extension Int {
+    /// Returns the higher of the two values
+    static func >>(lhs: Int, rhs: Int) -> Int {
+        return (lhs > rhs) ? lhs : rhs
+    }
+    
+    /// Returns the lower of the two values
+    static func <<(lhs: Int, rhs: Int) -> Int {
+        return (lhs < rhs) ? lhs : rhs
+    }
+}
