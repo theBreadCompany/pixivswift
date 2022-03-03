@@ -72,6 +72,11 @@ public class BasePixivAPI {
             req.httpBody = components.url!.query!.data(using: .utf8)
         }
         
+        #if DEBUG
+        guard let url = req.url else { throw PixivError.responseAcquirationFailed("Failed to build URL!") }
+        print("Request-URL: " + url.absoluteString)
+        #endif
+        
         var responseData: String = ""
         let task = URLSession.shared.dataTask(with: req ) { data, _response, error in
             guard let data = data, error == nil else { return }

@@ -64,12 +64,10 @@ public class AppPixivAPI: BasePixivAPI {
         
         guard let url = url else { return result }
         
-        for component in URLComponents(url: url, resolvingAgainstBaseURL: false)!.queryItems! {
+        for var component in URLComponents(url: url, resolvingAgainstBaseURL: false)!.queryItems! {
             if let ob = component.name.firstIndex(of: "["), let cb = component.name.firstIndex(of: "]") {
-                var _component = component
-                _component.name.removeSubrange(ob...cb)
-                guard let _ = result[_component.name] else { result[_component.name] = [_component.value!.description]; continue }
-                result[_component.name] = (result[_component.name] as! [String]) + [_component.value!]
+                component.name.removeSubrange(ob...cb)
+                result.updateValue(((result[component.name] as? [String]) ?? [] + component.value!).compactMap({Int($0)}) as Any, forKey: component.name)
             } else {
                 result[component.name] = component.value
             }
@@ -246,15 +244,18 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter req_auth: whether the API is required to be authorized
      - returns: a PixivResponse with similiar illustrations
      */
-    public func illust_related(illust_id: Int, filter: String = "for_ios", seed_illust_ids: Array<Int>? = nil, offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult {
+    public func illust_related(illust_id: Int, filter: String = "for_ios", seed_illust_ids: Array<Int>? = nil, viewed: Array<Int>? = nil, offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult {
         let url = URL(string: "\(self.hosts)/v2/illust/related")!
         var params = [
             "illust_id": illust_id.description,
             "filter": filter,
             "offset": offset == nil ? 0.description : offset!.description
         ]
-        if let seed_illust_ids = seed_illust_ids {
-            params["seed_illust_ids[]"] = seed_illust_ids.description
+        if let seed_illust_ids = seed_illust_ids, !seed_illust_ids.isEmpty {
+            params["seed_illust_ids[]"] = (seed_illust_ids.count == 1) ? seed_illust_ids.first!.description : seed_illust_ids.description
+        }
+        if let viewed = viewed {
+            params["viewed[]"] = (viewed.count == 1) ? viewed.first!.description : viewed.description
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)

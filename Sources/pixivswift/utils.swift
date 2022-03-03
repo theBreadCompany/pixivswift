@@ -60,3 +60,12 @@ extension String {
         }
     }
 }
+
+extension Array {
+    /// Combine two arrays with the same `Element`.
+    static func +(lhs: [Element], rhs: Element) -> [Element] {
+        var lhs = lhs
+        lhs.append(contentsOf: [rhs])
+        return lhs
+    }
+}
