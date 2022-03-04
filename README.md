@@ -3,7 +3,7 @@ A port of [upbit's pixivpy](https://github.com/upbit/pixivpy) library.
 
 ## Disclaimer
 
-This whole peace is provided as is, and I am not responsible for any damage or law breakings, i. e. damage to your hardware or consumption of questionable content.
+This whole piece is provided as is, and I am not responsible for any psychological/physical damage or law violations, i. e. hardware damage or consumption of questionable content.
 
 Also, please do not overuse this. Pixiv has no financial benefit from this, and they somehow have to finance their servers, too...
 
@@ -21,10 +21,7 @@ Also, please do not overuse this. Pixiv has no financial benefit from this, and 
 
 ## Documentation
 
-It's basicaly the same usage like [upbit's pixivpy](https://github.com/upbit/pixivpy): This API is synchronous, meaning that we wait for every single request to be completed. 
-
-### Examples
-WIP, please have a look at pixivpy ^^'.
+The project is documented, everything can be found in Xcode's Developer Documentation (```shift```+```cmd```+```0```) 
 
 ### Tips & Tricks
 - ~~You may use both the PublicAPI and the AppAPI class if nescessary~~ The PublicAPI will be deprecated soon.
@@ -32,8 +29,7 @@ WIP, please have a look at pixivpy ^^'.
 - ugoiras are essentially image sequences which have to be assembled manually -> the image urls contain a link to a zip file containing the images. Fetch this first, [unzip](https://github.com/marmelroy/zip), fetch metadata via ```AppPixivAPI.ugoira_metadata``` and use the first given frame delay for assembling. Code will follow.
 
 ## TODO
-- Improve this documentation (provide code examples)
-- Create tests
+- write more tests
 
 ## Announcements
 I'll release a repo of an iOS/macOS app using this API in a few weeks.
