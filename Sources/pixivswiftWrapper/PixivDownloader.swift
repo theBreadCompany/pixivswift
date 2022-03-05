@@ -132,7 +132,7 @@ open class PixivDownloader {
         while true {
             if (result.illusts ?? []).count >= limit || (result.illusts ?? []).contains(where: {$0.creationDate < earliestDate ?? Date(timeIntervalSince1970: 0)}) { return Array((result.illusts ?? [])[0...limit-1<<(result.illusts ?? []).count]) }
             let arguments = self._aapi.parse_qs(url: result.nextURL) // AA FORGOT TO EDIT PARSE_QS
-            result = try self._aapi.illust_follow(restrict: Publicity(rawValue: arguments["restrict"] as? String ?? "") ?? publicity, offset: Int(arguments["offset"] as? String ?? "") ?? (result.illusts ?? []).count)
+            result += try self._aapi.illust_follow(restrict: Publicity(rawValue: arguments["restrict"] as? String ?? "") ?? publicity, offset: Int(arguments["offset"] as? String ?? "") ?? (result.illusts ?? []).count)
         }
     }
     
@@ -203,7 +203,7 @@ open class PixivDownloader {
         while true {
             if (result.illusts ?? []).count >= limit { return Array((result.illusts ?? [])[0...limit-1]) }
             let arguments = self._aapi.parse_qs(url: result.nextURL)
-            result += try self._aapi.illust_recommended(content_type: (arguments["content_type"] as? String)!, include_ranking_label: arguments["include_ranking_label"] as! Bool, filter: arguments["filter"] as? String ?? "for_ios", max_bookmark_id_for_recommend: Int(arguments["max_bookmark_id_for_recommend"] as? String ?? "x"), offset: Int(arguments["offset"] as? String ?? "") ?? (result.illusts ?? []).count, include_ranking_illusts: arguments["include_ranking_ilusts"] as? Bool, include_privacy_policy: arguments["include_privacy_policy"] as? Bool)
+            result += try self._aapi.illust_recommended(content_type: arguments["content_type"] as! String, include_ranking_label: arguments["include_ranking_label"] as! Bool, filter: arguments["filter"] as? String ?? "for_ios", max_bookmark_id_for_recommend: Int(arguments["max_bookmark_id_for_recommend"] as? String ?? "x"), offset: Int(arguments["offset"] as? String ?? "") ?? (result.illusts ?? []).count, include_ranking_illusts: arguments["include_ranking_ilusts"] as? Bool, include_privacy_policy: arguments["include_privacy_policy"] as? Bool)
         }
     }
     
@@ -223,7 +223,7 @@ open class PixivDownloader {
             illusts.append(contentsOf: (result.illusts ?? [])[0...limit-illusts.count])
             if illusts.count == limit { return illusts }
             let arguments = self._aapi.parse_qs(url: result.nextURL)
-            result = try self._aapi.user_illusts(user_id: Int(arguments["user_id"] as? String ?? "x") ?? userID, type: arguments["type"] as? String ?? "illusts", filter: arguments["filter"] as? String ?? "for_ios", offset: illusts.count)
+            result += try self._aapi.user_illusts(user_id: Int(arguments["user_id"] as? String ?? "x") ?? userID, type: arguments["type"] as? String ?? "illusts", filter: arguments["filter"] as? String ?? "for_ios", offset: illusts.count)
         }
     }
     
@@ -278,7 +278,7 @@ open class PixivDownloader {
         while true {
             if (result.illusts ?? []).count >= limit { return Array((result.illusts ?? [])[0...limit-1]) }
             let arguments = self._aapi.parse_qs(url: result.nextURL)
-            result = try self._aapi.illust_related(illust_id: Int(arguments["illust_id"] as? String ?? "x") ?? illust_id, filter: arguments["filter"] as? String ?? "for_ios", offset: Int(arguments["offset"] as? String ?? "") ?? (result.illusts ?? []).count)
+            result += try self._aapi.illust_related(illust_id: Int(arguments["illust_id"] as? String ?? "x") ?? illust_id, filter: arguments["filter"] as? String ?? "for_ios", seed_illust_ids: arguments["seed_illust_ids"] as? Array<Int>, viewed: arguments["viewed"] as? Array<Int>, offset: Int(arguments["offset"] as? String ?? "") ?? (result.illusts ?? []).count)
         }
     }
     
