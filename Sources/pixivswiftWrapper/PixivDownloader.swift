@@ -312,17 +312,20 @@ open class PixivDownloader {
             
             var succeededURL: URL? = nil
             
+            let semaphore = DispatchSemaphore(value: 0)
+            
             let request = URLSession.shared.dataTask(with: task ) { data, _, error in
-                guard let imagedata = data, error == nil else { return }
+                guard let imagedata = data, error == nil else { semaphore.signal(); return }
                 let target = URL(fileURLWithPath: url.lastPathComponent, relativeTo: directory)
                 if with_metadata {
                     self.meta_update(metadata: illustration, illust_url: target, illust_data: imagedata)
                 } else {
-                    guard let _ = try? imagedata.write(to: target) else { return }
+                    guard let _ = try? imagedata.write(to: target) else { semaphore.signal(); return }
                 }
+                semaphore.signal()
             }
             request.resume()
-            while request.response == nil {} // wait for the response
+            semaphore.signal() // wait for the response
             
             if [200, 301, 302].contains((request.response as! HTTPURLResponse).statusCode) { // if the response signals a success, continue with setting the succeeded url and wait for it to be written to the disk
                 succeededURL = directory.appendingPathComponent(request.currentRequest!.url!.lastPathComponent)

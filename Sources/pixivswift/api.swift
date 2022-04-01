@@ -78,12 +78,17 @@ public class BasePixivAPI {
         #endif
         
         var responseData: String = ""
+        
+        let semaphore = DispatchSemaphore(value: 0)
+        
         let task = URLSession.shared.dataTask(with: req ) { data, _response, error in
-            guard let data = data, error == nil else { return }
+            guard let data = data, error == nil else { semaphore.signal(); return }
             responseData = String(data: data, encoding: .utf8) ?? ""
+            semaphore.signal()
         }
         task.resume()
-        while task.state == .running || (task.error == nil && responseData.isEmpty) {}
+        
+        semaphore.wait()
         
         guard !responseData.isEmpty else { throw PixivError.responseAcquirationFailed("No response data!") }
         guard let response = task.response as? HTTPURLResponse else { throw PixivError.responseAcquirationFailed("Response conversion failed!") }
