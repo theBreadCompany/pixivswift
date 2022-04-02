@@ -129,11 +129,11 @@ open class PixivDownloader {
      */
     open func my_following_illusts(until earliestDate: Date? = nil, publicity: Publicity = .public, limit: Int) throws -> [PixivIllustration]{
         var result = try self._aapi.illust_follow(restrict: publicity)
-        while true {
-            if (result.illusts ?? []).count >= limit || (result.illusts ?? []).contains(where: {$0.creationDate < earliestDate ?? Date(timeIntervalSince1970: 0)}) { return Array((result.illusts ?? [])[0...limit-1<<(result.illusts ?? []).count]) }
+        while (result.illusts ?? []).count <= limit || (result.illusts ?? []).contains(where: {$0.creationDate < earliestDate ?? Date(timeIntervalSince1970: 0)}) {
             let arguments = self._aapi.parse_qs(url: result.nextURL) // AA FORGOT TO EDIT PARSE_QS
             result += try self._aapi.illust_follow(restrict: Publicity(rawValue: arguments["restrict"] as? String ?? "") ?? publicity, offset: Int(arguments["offset"] as? String ?? "") ?? (result.illusts ?? []).count)
         }
+        return Array((result.illusts ?? [])[0...limit-1<<(result.illusts ?? []).count])
     }
     
     /**
@@ -146,11 +146,11 @@ open class PixivDownloader {
      */
     open func my_favorite_works(publicity: Publicity = .public, limit: Int) throws -> [PixivIllustration]{
         var result = try self._aapi.user_bookmarks_illust(user_id: self._aapi.user_id, restrict: publicity)
-        while true {
-            if (result.illusts ?? []).count >= limit { return Array((result.illusts ?? [])[0...limit-1]) }
+        while (result.illusts ?? []).count <= limit {
             let arguments = self._aapi.parse_qs(url: result.nextURL)
             result += try self._aapi.user_bookmarks_illust(user_id: Int(arguments["user_id"] as? String ?? "x") ?? self._aapi.user_id, restrict: Publicity(rawValue: arguments["restrict"] as? String ?? "") ?? publicity, filter: arguments["filter"] as? String ?? "for_ios", max_bookmark: Int(arguments["max_bookmark_id"] as? String ?? "x"), tag: arguments["tag"] as? String)
         }
+        return Array((result.illusts ?? [])[0...limit-1])
     }
     
     /**
@@ -200,11 +200,11 @@ open class PixivDownloader {
      */
     open func my_recommended(limit: Int) throws -> [PixivIllustration] {
         var result = try self._aapi.illust_recommended()
-        while true {
-            if (result.illusts ?? []).count >= limit { return Array((result.illusts ?? [])[0...limit-1]) }
+        while (result.illusts ?? []).count <= limit {
             let arguments = self._aapi.parse_qs(url: result.nextURL)
             result += try self._aapi.illust_recommended(content_type: arguments["content_type"] as! String, include_ranking_label: arguments["include_ranking_label"] as! Bool, filter: arguments["filter"] as? String ?? "for_ios", max_bookmark_id_for_recommend: Int(arguments["max_bookmark_id_for_recommend"] as? String ?? "x"), offset: Int(arguments["offset"] as? String ?? "") ?? (result.illusts ?? []).count, include_ranking_illusts: arguments["include_ranking_ilusts"] as? Bool, include_privacy_policy: arguments["include_privacy_policy"] as? Bool)
         }
+        return Array((result.illusts ?? [])[0...limit-1])
     }
     
     /**
@@ -216,15 +216,13 @@ open class PixivDownloader {
      - returns: a list of PixivIllustration objects
      */
     open func user_illusts(user: String, limit: Int) throws -> [PixivIllustration] {
-        var illusts: [PixivIllustration] = []
         let userID: Int = Int(user) != nil ? Int(user)! : try self.get_id_from_name(username: user)
         var result = try self._aapi.user_illusts(user_id: userID)
-        while true {
-            illusts.append(contentsOf: (result.illusts ?? [])[0...limit-illusts.count])
-            if illusts.count == limit { return illusts }
+        while (result.illusts ?? []).count <= limit {
             let arguments = self._aapi.parse_qs(url: result.nextURL)
-            result += try self._aapi.user_illusts(user_id: Int(arguments["user_id"] as? String ?? "x") ?? userID, type: arguments["type"] as? String ?? "illusts", filter: arguments["filter"] as? String ?? "for_ios", offset: illusts.count)
+            result += try self._aapi.user_illusts(user_id: Int(arguments["user_id"] as? String ?? "x") ?? userID, type: arguments["type"] as? String ?? "illusts", filter: arguments["filter"] as? String ?? "for_ios", offset: result.illusts?.count ?? 0)
         }
+        return Array((result.illusts ?? [])[0...limit-1])
     }
     
     /**
@@ -242,7 +240,6 @@ open class PixivDownloader {
         var illusts: [PixivIllustration] = []
         var count = 0
         while true {
-            
             for illust in try self._aapi.search_illust(word: query, search_target: searchMode, sort: sortMode).illusts ?? [] {
                 if count < limit {
                     count += 1
@@ -275,11 +272,11 @@ open class PixivDownloader {
      */
     open func related_illusts(illust_id: Int, limit: Int) throws -> [PixivIllustration] {
         var result = try self._aapi.illust_related(illust_id: illust_id)
-        while true {
-            if (result.illusts ?? []).count >= limit { return Array((result.illusts ?? [])[0...limit-1]) }
+        while (result.illusts ?? []).count <= limit {
             let arguments = self._aapi.parse_qs(url: result.nextURL)
             result += try self._aapi.illust_related(illust_id: Int(arguments["illust_id"] as? String ?? "x") ?? illust_id, filter: arguments["filter"] as? String ?? "for_ios", seed_illust_ids: arguments["seed_illust_ids"] as? Array<Int>, viewed: arguments["viewed"] as? Array<Int>, offset: Int(arguments["offset"] as? String ?? "") ?? (result.illusts ?? []).count)
         }
+        return Array((result.illusts ?? [])[0...limit-1])
     }
     
     private func get_id_from_name(username: String) throws -> Int {
