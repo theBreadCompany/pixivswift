@@ -12,13 +12,22 @@ import pixivswift
 
 extension pixivswiftWrapperTests {
     
-    func testBookmarks() throws {
+    func testBookmarking() throws {
         XCTAssertNoThrow(try {
-            let bookmarks = try self.downloader.my_favorite_works(publicity: .public, limit: 20)
+            let target = 30
+            let bookmarks = try self.downloader.my_favorite_works(publicity: .public, limit: target)
             for bookmark in bookmarks {
                 try self.downloader.unbookmark(illust_id: bookmark.id)
                 try self.downloader.bookmark(illust_id: bookmark.id)
             }
+        }())
+    }
+    
+    func testFetchingBookmarks() {
+        XCTAssertNoThrow(try {
+            let target = 30
+            let bookmarks = try self.downloader.my_favorite_works(publicity: .public, limit: 30)
+            XCTAssertEqual(bookmarks.count, target)
         }())
     }
 }
