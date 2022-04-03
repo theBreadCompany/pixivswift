@@ -10,6 +10,7 @@ import Foundation
 import ImageIO
 import Zip
 import pixivswift
+import QuartzCore
 
 
 #if canImport(UIKit)
@@ -311,14 +312,13 @@ open class PixivDownloader {
             
             let semaphore = DispatchSemaphore(value: 0)
             
-            let request = URLSession.shared.dataTask(with: task ) { data, _, error in
-                guard let imagedata = data, error == nil else { semaphore.signal(); return }
+            let request = URLSession.shared.downloadTask(with: task) { tempurl, _, error in
+                guard let tempurl = tempurl, error == nil else { semaphore.signal(); return }
                 let target = URL(fileURLWithPath: url.lastPathComponent, relativeTo: directory)
                 if with_metadata {
-                    self.meta_update(metadata: illustration, illust_url: target, illust_data: imagedata)
-                } else {
-                    guard let _ = try? imagedata.write(to: target) else { semaphore.signal(); return }
+                    self.meta_update(metadata: illustration, illust_url: tempurl)
                 }
+                do { try FileManager.default.moveItem(at: tempurl, to: target) } catch { semaphore.signal(); return }
                 semaphore.signal()
             }
             request.resume()
