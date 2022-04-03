@@ -322,7 +322,7 @@ open class PixivDownloader {
                 semaphore.signal()
             }
             request.resume()
-            semaphore.signal() // wait for the response
+            semaphore.wait() // wait for the response
             
             if [200, 301, 302].contains((request.response as! HTTPURLResponse).statusCode) { // if the response signals a success, continue with setting the succeeded url and wait for it to be written to the disk
                 succeededURL = directory.appendingPathComponent(request.currentRequest!.url!.lastPathComponent)
