@@ -130,11 +130,11 @@ open class PixivDownloader {
      */
     open func my_following_illusts(until earliestDate: Date? = nil, publicity: Publicity = .public, limit: Int) throws -> [PixivIllustration]{
         var result = try self._aapi.illust_follow(restrict: publicity)
-        while (result.illusts ?? []).count <= limit && (result.illusts ?? []).allSatisfy({$0.creationDate < earliestDate ?? Date(timeIntervalSince1970: 0)}) {
+        while (result.illusts ?? []).count <= limit && (result.illusts ?? []).allSatisfy({$0.creationDate >= earliestDate ?? Date(timeIntervalSince1970: 0)}) {
             let arguments = self._aapi.parse_qs(url: result.nextURL)
             result += try self._aapi.illust_follow(restrict: Publicity(rawValue: arguments["restrict"] as? String ?? "") ?? publicity, offset: Int(arguments["offset"] as? String ?? "") ?? (result.illusts ?? []).count)
         }
-        return Array((result.illusts ?? [])[0...limit-1<<(result.illusts ?? []).count]).filter({$0.creationDate < earliestDate ?? Date(timeIntervalSince1970: 0)})
+        return Array((result.illusts ?? [])[0...(limit<<(result.illusts ?? []).count)-1]).filter({$0.creationDate >= earliestDate ?? Date(timeIntervalSince1970: 0)})
     }
     
     /**
