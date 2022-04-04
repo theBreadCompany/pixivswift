@@ -130,11 +130,11 @@ open class PixivDownloader {
      */
     open func my_following_illusts(until earliestDate: Date? = nil, publicity: Publicity = .public, limit: Int) throws -> [PixivIllustration]{
         var result = try self._aapi.illust_follow(restrict: publicity)
-        while (result.illusts ?? []).count <= limit || (result.illusts ?? []).contains(where: {$0.creationDate < earliestDate ?? Date(timeIntervalSince1970: 0)}) {
-            let arguments = self._aapi.parse_qs(url: result.nextURL) // AA FORGOT TO EDIT PARSE_QS
+        while (result.illusts ?? []).count <= limit && (result.illusts ?? []).allSatisfy({$0.creationDate < earliestDate ?? Date(timeIntervalSince1970: 0)}) {
+            let arguments = self._aapi.parse_qs(url: result.nextURL)
             result += try self._aapi.illust_follow(restrict: Publicity(rawValue: arguments["restrict"] as? String ?? "") ?? publicity, offset: Int(arguments["offset"] as? String ?? "") ?? (result.illusts ?? []).count)
         }
-        return Array((result.illusts ?? [])[0...limit-1<<(result.illusts ?? []).count])
+        return Array((result.illusts ?? [])[0...limit-1<<(result.illusts ?? []).count]).filter({$0.creationDate < earliestDate ?? Date(timeIntervalSince1970: 0)})
     }
     
     /**
@@ -308,8 +308,6 @@ open class PixivDownloader {
             var task = URLRequest(url: url)
             task.allHTTPHeaderFields = ["Referer": "https://app-api.pixiv.net/"]
             
-            var succeededURL: URL? = nil
-            
             let semaphore = DispatchSemaphore(value: 0)
             
             let request = URLSession.shared.downloadTask(with: task) { tempurl, _, error in
@@ -324,11 +322,9 @@ open class PixivDownloader {
             request.resume()
             semaphore.wait() // wait for the response
             
-            if [200, 301, 302].contains((request.response as! HTTPURLResponse).statusCode) { // if the response signals a success, continue with setting the succeeded url and wait for it to be written to the disk
-                succeededURL = directory.appendingPathComponent(request.currentRequest!.url!.lastPathComponent)
-                while !FileManager.default.fileExists(atPath: succeededURL!.path) { continue }
-            }
-            return succeededURL
+            return [200, 301, 302].contains((request.response as! HTTPURLResponse).statusCode) // if the response signals a success, continue with setting the succeeded url and wait for it to be written to the disk
+            ? directory.appendingPathComponent(url.lastPathComponent)
+            : nil
         }
         
         if !FileManager().directoryExists(directory.path) {
@@ -364,39 +360,29 @@ open class PixivDownloader {
      - Parameter illust_data: Data object containing image data that should be update (illust_path is nescessary anyway as this function also writes the new data)
      */
     open func meta_update(metadata: PixivIllustration, illust_url: URL, illust_data: Data? = nil){
-        let image: CGImageSource
         let file_url: URL = illust_url
-        if let illust_data = illust_data {
-            image = CGImageSourceCreateWithData(illust_data as CFData, nil)!
-        } else {
-            image = CGImageSourceCreateWithURL(file_url as CFURL, nil)!
-        }
+        let image: CGImageSource = illust_data != nil
+        ? CGImageSourceCreateWithData(illust_data! as CFData, nil)!
+        : CGImageSourceCreateWithURL(file_url as CFURL, nil)!
+        
         var properties = CGImageSourceCopyPropertiesAtIndex(image, 0, nil) as? Dictionary<String, Any> ?? [:]
         
-        var translations: [String] = []
-        for dict in metadata.tags {
-            dict.translatedName != nil ? translations.append(dict.translatedName!) : translations.append(dict.name)
-        }
+        let translations = metadata.tags.map({ $0.translatedName != nil ? $0.translatedName! : $0.name })
         
-        if properties["{IPTC}"] == nil {
-            properties["{IPTC}"] = [:]
-        }
-        
-        let IPTCmetadata: [String: Any] = [
+        properties.updateValue(properties["{IPTC}"] ?? [:], forKey: "{IPTC}")
+
+        properties.updateValue([
             "Keywords": translations,
             "ObjectName": metadata.title,
             "ObjectType": metadata.type == .illust ? "illustration" : metadata.type.rawValue,
             "Caption/Abstract": metadata.caption,
             "Source": metadata.illustrationURLs.first!.original.deletingLastPathComponent().appendingPathComponent(illust_url.lastPathComponent)
-            
-        ]
-        properties.updateValue(IPTCmetadata, forKey: "{IPTC}")
+        ] as [String: Any], forKey: "{IPTC}")
         
-        let TIFFmetadata: [String:Any] = [
+        properties.updateValue([
             "Artist": metadata.user.name,
             "DateTime": metadata.creationDate
-        ]
-        properties.updateValue(TIFFmetadata, forKey: "{TIFF}")
+        ] as [String:Any], forKey: "{TIFF}")
         
         var img_type: CFString
         if illust_url.absoluteString.contains(".png") {
