@@ -385,14 +385,15 @@ open class PixivDownloader {
         ] as [String:Any], forKey: "{TIFF}")
         
         var img_type: CFString
-        if illust_url.absoluteString.contains(".png") {
+        switch metadata.illustrationURLs.first!.original.lastPathComponent {
+        case let s where s.contains(".png"):
             img_type = kUTTypePNG
-        } else if illust_url.absoluteString.contains(".jpg") {
+        case let s where s.contains(".jpg"):
             img_type = kUTTypeJPEG
-        } else if illust_url.absoluteString.contains(".gif") {
+        case let s where s.contains(".gif"):
             img_type = kUTTypeGIF
             //try JSONSerialization.data(withJSONObject: JSONSerialization.jsonObject(with: Data(properties.description.utf8), options: []), options: .prettyPrinted).write(to: illust_url.appendingPathExtension("txt"))
-        } else {
+        default:
             fatalError("unexpected image type")
         }
         let new_image = CGImageDestinationCreateWithURL(file_url as CFURL, img_type, CGImageSourceGetCount(image), nil)
