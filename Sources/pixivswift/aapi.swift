@@ -40,7 +40,7 @@ public class AppPixivAPI: BasePixivAPI {
         if !req_auth {
             return try self.requests_call(method: method, url: url, headers: _headers, params: params, data: data)
         } else {
-            try! self.require_auth()
+            try self.require_auth()
             _headers["Authorization"] = "Bearer " + self.access_token
             return try self.requests_call(method: method, url: url, headers: _headers, params: params, data: data)
         }
