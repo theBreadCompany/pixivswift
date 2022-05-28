@@ -23,10 +23,9 @@ Also, please do not overuse this. Pixiv has no financial benefit from this, and 
 
 The project is documented, everything can be found in Xcode's Developer Documentation (```shift```+```cmd```+```0```) 
 
-### Tips & Tricks
-- ~~You may use both the PublicAPI and the AppAPI class if nescessary~~ The PublicAPI will be deprecated soon.
-- ~~The public API grants access to searches by illustration popularity, which the AppAPI doesn't, even with the correct keyword~~ The PublicAPI seems to have been shutdown even further, now including the search function. You now have to use the AppAPI and look at a bigger collection of illustrations and i. e. filter out by a minimum number of bookmarks or views. You may use the popular search if you have a premium account. The API will automatically switch from using the most popular to the newest populations if you dont have premium, even if using ```SearchMode.popular_desc```.
-- ugoiras are essentially image sequences which have to be assembled manually -> the image urls contain a link to a zip file containing the images. Fetch this first, [unzip](https://github.com/marmelroy/zip), fetch metadata via ```AppPixivAPI.ugoira_metadata``` and use the first given frame delay for assembling. Code will follow.
+### Notes
+- The PublicAPI is deprecated and will receive no further support.
+- ugoiras are essentially image sequences which have to be assembled manually -> the image urls contain a link to a zip file containing the images. Fetch this first, [unzip](https://github.com/marmelroy/zip), fetch metadata via ```AppPixivAPI.ugoira_metadata``` and use the first given frame delay for assembling. Take a look at ```PixivDownloader.zip_to_ugoira```..
 
 ## TODO
 - write more tests
