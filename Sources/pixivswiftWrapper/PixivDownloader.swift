@@ -385,12 +385,12 @@ open class PixivDownloader {
         ] as [String:Any], forKey: "{TIFF}")
         
         var img_type: CFString
-        switch metadata.illustrationURLs.first!.original.lastPathComponent {
-        case let s where s.contains(".png"):
+        switch metadata.illustrationURLs.first!.original.pathExtension {
+        case "png":
             img_type = kUTTypePNG
-        case let s where s.contains(".jpg"):
+        case "jpg":
             img_type = kUTTypeJPEG
-        case let s where s.contains(".gif"):
+        case "gif":
             img_type = kUTTypeGIF
             //try JSONSerialization.data(withJSONObject: JSONSerialization.jsonObject(with: Data(properties.description.utf8), options: []), options: .prettyPrinted).write(to: illust_url.appendingPathExtension("txt"))
         default:
