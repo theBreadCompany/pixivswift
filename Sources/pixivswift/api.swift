@@ -74,7 +74,7 @@ public class BasePixivAPI {
         
         #if DEBUG
         guard let url = req.url else { throw PixivError.responseAcquirationFailed("Failed to build URL!") }
-        print("Request-URL: " + url.absoluteString)
+        NSLog("Request-URL: %@", url.absoluteString)
         #endif
         
         var responseData: String = ""
