@@ -5,6 +5,8 @@
 //  Created by Fabio Mauersberger on 01.07.21.
 //  This is cursed and bad code.
 
+import Foundation
+
 #if canImport(Erik)
 import Erik
 #endif
@@ -73,29 +75,34 @@ extension BasePixivAPI {
         return response
     }
     
-    #if canImport(Erik)
+    // Dummy method because other dont work
+    func login(username: String, password: String) throws -> String {
+        throw HeadlessLoginError.loginDead("Implementation is dead for now; please use another login method, see the pixivauth module in https://github.com/thebreadcompany/pixivswift")
+    }
+}
+/*
     
     func login(username: String, password: String) throws -> String {
         var shouldKeepRunning = true
-
+        
         let h = pixivURLHandler()
-                
+        
         let c = WKWebViewConfiguration()
         c.setURLSchemeHandler(h, forURLScheme: "pixiv")
         let web = WKWebView(frame: .init(), configuration: c)
         let erik = Erik(webView: web)
         
         let (code_verifier, code_challenge) = oauth_pkce()
-
+        
         var response = ""
-            
+        
         var compontents = URLComponents(string: "https://app-api.pixiv.net/web/v1/login")!
         compontents.queryItems = [
             URLQueryItem(name: "code_challenge", value: code_challenge),
             URLQueryItem(name: "code_challenge_method", value: "S256"),
             URLQueryItem(name: "client", value: "pixiv-android")
         ]
-
+        
         var error: HeadlessLoginError? = nil
         
         erik.visit(url: compontents.url!) { document, err in
@@ -111,21 +118,34 @@ extension BasePixivAPI {
                 }
                 
                 erik.currentContent { document, _ in
-                                                
                     guard let document = document else { shouldKeepRunning = false; print("something failed!"); return}
-                    
-                    if let username_input = document.querySelectorAll("input[type=\"text\"]").first {
-                        username_input["value"] = username
-                    }
-                    if let passwd_input = document.querySelectorAll("input[type=\"password\"]").first {
-                        passwd_input["value"] = password
+                    if let loginButton = document.querySelectorAll(".signup-form__submit").first {
+                        loginButton.click()
                     }
                     
-                    if let form = document.querySelectorAll("button.signup-form__submit").first {
-                        form.click()
+                    erik.currentContent { document, _ in
+                        guard let document = document else { shouldKeepRunning = false; print("something failed!"); return}
+                        
+                        print(document.querySelectorAll("input"))
+                        
+                        if let username_input = document.querySelectorAll("input[type=\"text\"]").first {
+                            username_input["value"] = username
+                        }
+                        if let passwd_input = document.querySelectorAll("input[type=\"password\"]").first {
+                            passwd_input["value"] = password
+                        }
+                        
+                        if let form = document.querySelectorAll("button[class=\"sc-bdnxRM jvCTkj sc-dlnjwi pKCsX sc-y2pfnd-9 dMhwJU sc-y2pfnd-9 dMhwJU\"").first {
+                            form.click()
+                        }
+                        
+                        erik.currentContent { document, _ in
+                            guard let document = document else { shouldKeepRunning = false; print("something failed!"); return}
+                            print(document)
+                        }
+                        
+                        shouldKeepRunning = false
                     }
-                    
-                    shouldKeepRunning = false
                 }
             } else {
                 shouldKeepRunning = false
@@ -143,7 +163,7 @@ extension BasePixivAPI {
             Thread.sleep(forTimeInterval: .init(10))
             shouldKeepRunning = false
         }
-
+        
         while shouldKeepRunning && RunLoop.current.run(mode: .default, before: .distantFuture) { }
         
         if !h.code.isEmpty {
@@ -159,7 +179,7 @@ extension BasePixivAPI {
         }
     }
     
-    #endif
+#endif
 }
 
 fileprivate class pixivURLHandler: NSObject, WKURLSchemeHandler {
@@ -175,8 +195,10 @@ fileprivate class pixivURLHandler: NSObject, WKURLSchemeHandler {
     func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {}
     
 }
+*/
 
-enum HeadlessLoginError: Error {
+enum HeadlessLoginError: Error, Equatable {
     case badCredentials
     case recognition
+    case loginDead(String)
 }

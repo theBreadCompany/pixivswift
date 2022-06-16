@@ -57,7 +57,14 @@ public struct PixivIllustration: Codable {
     }
     private var createDate: String
     public var creationDate: Date {
-        return ISO8601DateFormatter().date(from: createDate)!
+        if #available(macOS 10.12, *) {
+            return ISO8601DateFormatter().date(from: createDate)!
+        } else {
+            // Fallback on earlier versions
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
+            return dateFormatter.date(from: createDate)!
+        }
     }
     public var xRestrict: Int
     public var tags: [IllustrationTag]

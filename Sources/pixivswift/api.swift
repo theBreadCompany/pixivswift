@@ -171,7 +171,7 @@ public class BasePixivAPI {
             do {
                 token = try self.parse_json(json: self.login(username: username, password: password))
             } catch let e {
-                if e as? HeadlessLoginError == HeadlessLoginError.recognition {
+                if e as? HeadlessLoginError == .recognition {
                     Thread.sleep(forTimeInterval: .init(10)) // wait then retry, usually works
                     token = try self.parse_json(json: self.login(username: username, password: password))
                 } else {
