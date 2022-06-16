@@ -25,7 +25,7 @@ public class AppPixivAPI: BasePixivAPI {
         self.hosts = "https://app-api.pixiv.net"
     }
     
-    private func no_auth_requests_call(method: HttpMethod, url: URL, headers: Dictionary<String, String> = [:], params: Dictionary<String, String> = [:], data: Dictionary<String, String> = [:], req_auth: Bool = true) throws -> String {
+    internal func no_auth_requests_call(method: HttpMethod, url: URL, headers: Dictionary<String, String> = [:], params: Dictionary<String, String> = [:], data: Dictionary<String, String> = [:], req_auth: Bool = true) throws -> String {
         var _headers = headers
         if self.hosts != "https://app-api.pixiv.net" {
             _headers["host"] = "app-api.pixiv.net"
@@ -46,7 +46,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
     }
 
-    private func parse_result(req: String) -> PixivResult {
+    internal func parse_result(req: String) -> PixivResult {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         return try! decoder.decode(PixivResult.self, from: Data(req.utf8))
