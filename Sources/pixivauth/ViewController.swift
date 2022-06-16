@@ -38,7 +38,7 @@ public class URLObserver: NSObject {
         self.changeHandler = changeHandler
         super.init()
         
-        observation = observe(\.webview.url, options: .new) { wv, change in
+        observation = observe(\.webview.url, options: .new) { _, change in
             self.changeHandler(change.newValue!!)
         }
     }
@@ -46,7 +46,7 @@ public class URLObserver: NSObject {
 
 public class LoginHelper: NSObject {
     public var oauthData: (String, String) = BasePixivAPI().oauth_pkce()
-    public var observer: URLObserver? = nil
+    public var observer: URLObserver?
     
     public func startLogin(onView webview: WKWebView, completionHandler: @escaping (String) -> Void) {
         webview.load(createRequest(using: self.oauthData))

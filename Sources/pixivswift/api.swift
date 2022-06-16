@@ -81,7 +81,7 @@ public class BasePixivAPI {
         
         let semaphore = DispatchSemaphore(value: 0)
         
-        let task = URLSession.shared.dataTask(with: req ) { data, _response, error in
+        let task = URLSession.shared.dataTask(with: req ) { data, _, error in
             guard let data = data, error == nil else { semaphore.signal(); return }
             responseData = String(data: data, encoding: .utf8) ?? ""
             semaphore.signal()
@@ -220,7 +220,7 @@ public class BasePixivAPI {
             
             var req = URLRequest(url: url)
             req.allHTTPHeaderFields = ["Referer": referer.absoluteString]
-            let task = URLSession.shared.downloadTask(with: req) { url, r, error in
+            let task = URLSession.shared.downloadTask(with: req) { url, _, error in
                 guard let url = url, error == nil else { return }
                 guard let _ = try? FileManager.default.moveItem(at: url, to: targetURL) else { return }
                 
