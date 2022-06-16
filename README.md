@@ -9,7 +9,7 @@ Also, please do not overuse this. Pixiv has no financial benefit from this, and 
 
 ## Features
 
-- ~~Headless login~~for now, please use the [pixivauth executable supplied by pixivloader or build your own from it](https://github.com/thebreadcompany/pixivloader)
+- ~~Headless login~~for now, please use the [pixivauth executable target or build your own login process from it](https://github.com/thebreadcompany/pixivloader)
 - Access to ~~both the public API (deprecated) and~~ the API used by the Pixiv app 
 - Directly download images (although ugoiras (GIFs) require further handling, see below)
 
@@ -30,7 +30,6 @@ The project is documented, everything can be found in Xcode's Developer Document
 ## TODO
 - write more tests
 - actually finally finish the fix for headless login
-- take over the pixivauth (GUI auth) module from [pixivloader](https://github.com/thebreadcompany/pixivloader)
 - introduce a proper repo structure (like a dev branch) and version management (patches are always pushed without updating the tag, meaning clients using this pkg will have the bugs that are solved in HEAD (aaa))
 
 ## Announcements
