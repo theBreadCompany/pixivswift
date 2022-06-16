@@ -9,9 +9,9 @@ Also, please do not overuse this. Pixiv has no financial benefit from this, and 
 
 ## Features
 
-- Headless login
-- Access to both the public API and the API used by the Pixiv app (NOTE: the public API seems dead so I will drop it soon)
-- Directly download images (although ugoiras require further handling, more on that will follow)
+- ~~Headless login~~for now, please use the [pixivauth executable supplied by pixivloader or build your own from it](https://github.com/thebreadcompany/pixivloader)
+- Access to ~~both the public API (deprecated) and~~ the API used by the Pixiv app 
+- Directly download images (although ugoiras (GIFs) require further handling, see below)
 
 ## Installation
 
@@ -25,14 +25,17 @@ The project is documented, everything can be found in Xcode's Developer Document
 
 ### Notes
 - The PublicAPI is deprecated and will receive no further support.
-- ugoiras are essentially image sequences which have to be assembled manually -> the image urls contain a link to a zip file containing the images. Fetch this first, [unzip](https://github.com/marmelroy/zip), fetch metadata via ```AppPixivAPI.ugoira_metadata``` and use the first given frame delay for assembling. Take a look at ```PixivDownloader.zip_to_ugoira```..
+- ugoiras are essentially image sequences which have to be assembled manually -> the image urls contain a link to a zip file containing the images. Fetch this first, [unzip](https://github.com/Maparoni/Zip), fetch metadata via ```AppPixivAPI.ugoira_metadata``` and use the first given frame delay for assembling. Take a look at ```PixivDownloader.zip_to_ugoira```.
 
 ## TODO
 - write more tests
+- actually finally finish the fix for headless login
+- take over the pixivauth (GUI auth) module from [pixivloader](https://github.com/thebreadcompany/pixivloader)
+- introduce a proper repo structure (like a dev branch) and version management (patches are always pushed without updating the tag, meaning clients using this pkg will have the bugs that are solved in HEAD (aaa))
 
 ## Announcements
-I'll release a repo of an iOS/macOS app using this API in a few weeks.
-You can already find my script using this API with an intermediate wrapper [here](https://github.com/theBreadCompany/pixivloader).
+I'll release a repo of an iOS/macOS app using this API soon.
+You can already find my script using this API [here](https://github.com/theBreadCompany/pixivloader).
 
 ## Credits
 - [pixiv.net](https://pixiv.net) for their amazing platform
