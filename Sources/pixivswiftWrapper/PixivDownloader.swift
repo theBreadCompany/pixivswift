@@ -8,7 +8,7 @@
 
 import Foundation
 import ImageIO
-import Zip
+import ZIPFoundation
 import pixivswift
 import QuartzCore
 
@@ -59,11 +59,11 @@ open class PixivDownloader {
         self.login(refresh_token: refresh_token)
     }
     
-    #if canImport(Erik)
+#if canImport(Erik)
     public func login(username: String? = nil, password: String? = nil, refresh_token: String? = nil) { self._login(username: username, password: password, refresh_token: refresh_token) }
-    #else
+#else
     public func login(refresh_token: String? = nil) { self._login(refresh_token: refresh_token) }
-    #endif
+#endif
     /**
      Login
      
@@ -81,7 +81,7 @@ open class PixivDownloader {
                 NSLog("Login failed")
             }
         }
-        #if canImport(Erik)
+#if canImport(Erik)
         if let username = username, let password = password {
             do {
                 let _ = try self._aapi.auth(username: username, password: password)
@@ -90,7 +90,7 @@ open class PixivDownloader {
                 print("Login failed")
             }
         }
-        #endif
+#endif
         
         self.last_login = Date()
     }
@@ -370,7 +370,7 @@ open class PixivDownloader {
         let translations = metadata.tags.map({ $0.translatedName != nil ? $0.translatedName! : $0.name })
         
         properties.updateValue(properties["{IPTC}"] ?? [:], forKey: "{IPTC}")
-
+        
         properties.updateValue([
             "Keywords": translations,
             "ObjectName": metadata.title,
@@ -424,17 +424,17 @@ open class PixivDownloader {
     }
     
     private func zip_to_ugoira(zip: URL, delay: Int) throws -> Data {
-            let unzipped_url = try self.unzip(zipURL: zip)
-            
-            let imgData = Data() as! CFMutableData
-            
-            let gif_destination = CGImageDestinationCreateWithData(imgData, kUTTypeGIF, try FileManager().contentsOfDirectory(atPath: unzipped_url.path).count, [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]] as CFDictionary)
-            
-            for image in try FileManager().contentsOfDirectory(atPath: unzipped_url.path).sorted() {
-                CGImageDestinationAddImage(gif_destination!, CGImageSourceCreateImageAtIndex(CGImageSourceCreateWithURL(URL(fileURLWithPath: image, relativeTo: unzipped_url) as CFURL, nil)!, 0, nil)!, [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFUnclampedDelayTime as String: Double(delay)/Double(1000)]] as CFDictionary)
-            }
-            CGImageDestinationFinalize(gif_destination!)
-            return imgData as Data
+        let unzippedURL = try self.unzip(zipURL: zip)
+        
+        let imgData = Data() as! CFMutableData
+        
+        let gifDestination = CGImageDestinationCreateWithData(imgData, kUTTypeGIF, try FileManager().contentsOfDirectory(atPath: unzippedURL.path).count, [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]] as CFDictionary)
+        
+        for image in try FileManager().contentsOfDirectory(atPath: unzippedURL.path).sorted() {
+            CGImageDestinationAddImage(gifDestination!, CGImageSourceCreateImageAtIndex(CGImageSourceCreateWithURL(URL(fileURLWithPath: image, relativeTo: unzippedURL) as CFURL, nil)!, 0, nil)!, [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFUnclampedDelayTime as String: Double(delay)/Double(1000)]] as CFDictionary)
+        }
+        CGImageDestinationFinalize(gifDestination!)
+        return imgData as Data
     }
     
     /**
@@ -445,16 +445,17 @@ open class PixivDownloader {
      - throws: ZipError.fileNotFound or ZipError.unzipFailed
      */
     private func unzip(zipURL: URL) throws -> URL {
-        if FileManager().fileExists(atPath: zipURL.path) {
-            let unzipped_url = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true).appendingPathComponent(zipURL.deletingPathExtension().lastPathComponent, isDirectory: true)
+        if FileManager.default.fileExists(atPath: zipURL.path) {
+            let unzippedURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true).appendingPathComponent(zipURL.deletingPathExtension().lastPathComponent, isDirectory: true)
             
-            if !FileManager().directoryExists(unzipped_url.path) {
-                try FileManager.default.createDirectory(at: unzipped_url, withIntermediateDirectories: false)
+            if !FileManager().directoryExists(unzippedURL.path) {
+                try FileManager.default.createDirectory(at: unzippedURL, withIntermediateDirectories: false)
             }
-            try Zip.unzipFile(zipURL, destination: unzipped_url, overwrite: true, password: nil)
-            return unzipped_url
+            try FileManager.default.unzipItem(at: zipURL, to: unzippedURL)
+            //try Zip.unzipFile(zipURL, destination: unzipped_url, overwrite: true, password: nil)
+            return unzippedURL
         } else {
-            throw ZipError.fileNotFound
+            throw URLError(.fileDoesNotExist)
         }
     }
 }
