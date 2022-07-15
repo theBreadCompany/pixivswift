@@ -8,6 +8,9 @@
 
 import Foundation
 
+/**
+ Class to be used by any API classes
+ */
 public class BasePixivAPI {
     
     private var client_id: String
@@ -108,11 +111,22 @@ public class BasePixivAPI {
         return responseData
     }
     
+    /**
+     use already received credentials to prevent yet another login query
+     - Parameter access_token: the access token used to actually authorize any calls to the API
+     - Parameter refresh_token: the refresh token used to re-login when the access token has lost its validity
+     */
     public func set_auth(access_token: String, refresh_token: String? = nil) {
         self.access_token = access_token
         self.refresh_token = refresh_token!
     }
     
+    /**
+     use your own client identity
+     
+     
+     In case
+     */
     public func set_client(client_id: String, client_secret: String) {
         self.client_id = client_id
         self.client_secret = client_secret

@@ -17,6 +17,11 @@ import CommonCrypto
 
 extension BasePixivAPI {
     
+    /**
+     Generate oauth credentials for login via app.pixiv.net
+     
+     - returns: a tuple in the form of (verifier, challenge)
+     */
     public func oauth_pkce() -> (String, String) {
         var keyData = Data(count: 32)
         let _ = keyData.withUnsafeMutableBytes { SecRandomCopyBytes(kSecRandomDefault, 32, $0.baseAddress!) }
@@ -44,6 +49,10 @@ extension BasePixivAPI {
         return (code_verifier, code_challenge)
     }
     
+    /**
+     Handle oauth code from app.pixiv.net
+     - returns: a reusable login token
+     */
     public func handle_code(_ code: String, code_challenge: String, code_verifier: String) -> String {
         let data = [
             "client_id": "MOBrBDS8blbauoSck0ZfDbtuzpyT",
