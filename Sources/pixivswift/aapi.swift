@@ -21,9 +21,13 @@ public class AppPixivAPI: BasePixivAPI {
      has to be called with valid credentials first before it is allowed to interact with the API.
      */
     public override init() {
+        self.decoder = JSONDecoder()
+        self.decoder.keyDecodingStrategy = .convertFromSnakeCase
         super.init()
         self.hosts = "https://app-api.pixiv.net"
     }
+    
+    internal var decoder: JSONDecoder
     
     internal func no_auth_requests_call(method: HttpMethod, url: URL, headers: Dictionary<String, String> = [:], params: Dictionary<String, String> = [:], data: Dictionary<String, String> = [:], req_auth: Bool = true) throws -> String {
         var _headers = headers
@@ -46,13 +50,6 @@ public class AppPixivAPI: BasePixivAPI {
         }
     }
 
-    internal func parse_result(req: String) -> PixivResult {
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return try! decoder.decode(PixivResult.self, from: Data(req.utf8))
-    }
-    
-    
     /**
      parse the next\_url contained in an API response to get its components
      
@@ -91,7 +88,7 @@ public class AppPixivAPI: BasePixivAPI {
         ]
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -120,7 +117,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -151,7 +148,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_true)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -171,7 +168,7 @@ public class AppPixivAPI: BasePixivAPI {
             "seed_user_id": seed_user_id.description
         ]
         let r = try no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        var parsed_r = self.parse_result(req: r)
+        var parsed_r = try decoder.decode(PixivResult.self, from: Data(r.utf8))
         parsed_r.nextURL = URL(string: "\(self.hosts)/v1/user/related?filter=" + params["filter"]! + "&offset=\(Int(params["offset"]!)!+30)&seed_user_id=" + params["seed_user_id"]!)!
         return parsed_r
     }
@@ -192,7 +189,7 @@ public class AppPixivAPI: BasePixivAPI {
         ]
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -208,7 +205,7 @@ public class AppPixivAPI: BasePixivAPI {
         ]
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -232,7 +229,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -259,7 +256,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -316,7 +313,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -342,7 +339,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -358,7 +355,18 @@ public class AppPixivAPI: BasePixivAPI {
         ]
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
+    }
+    
+    public func search_tag(word: String, filter: String = "for_ios", req_auth: Bool = true) throws -> [IllustrationTag] {
+        let url = URL(string: "\(self.hosts)/v2/search/autocomplete")!
+        let params = [
+            "word": word,
+            "filter": filter
+        ]
+        
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params)
+        return try decoder.decode([IllustrationTag].self, from: Data(result.utf8))
     }
     
     /**
@@ -396,7 +404,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -434,7 +442,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -463,7 +471,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -479,7 +487,7 @@ public class AppPixivAPI: BasePixivAPI {
         ]
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -505,7 +513,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .POST, url: url, data: data, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -521,7 +529,7 @@ public class AppPixivAPI: BasePixivAPI {
         ]
         
         let result = try self.no_auth_requests_call(method: .POST, url: url, data: data, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -539,7 +547,7 @@ public class AppPixivAPI: BasePixivAPI {
         ]
         
         let result = try self.no_auth_requests_call(method: .POST, url: url, data: data, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     /**
      unfollow a user
@@ -554,7 +562,7 @@ public class AppPixivAPI: BasePixivAPI {
         ]
         
         let result = try self.no_auth_requests_call(method: .POST, url: url, data: data, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -574,7 +582,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -596,7 +604,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -618,7 +626,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -637,7 +645,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -659,7 +667,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -675,7 +683,7 @@ public class AppPixivAPI: BasePixivAPI {
         ]
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -697,7 +705,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -719,7 +727,7 @@ public class AppPixivAPI: BasePixivAPI {
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -735,7 +743,7 @@ public class AppPixivAPI: BasePixivAPI {
         ]
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -751,7 +759,7 @@ public class AppPixivAPI: BasePixivAPI {
         ]
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -769,7 +777,7 @@ public class AppPixivAPI: BasePixivAPI {
             "article-id": showcase_id.description
         ]
         let result = try self.no_auth_requests_call(method: .GET, url: url, headers: headers, params: params, req_auth: false)
-        return self.parse_result(req: result)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
 }
 
