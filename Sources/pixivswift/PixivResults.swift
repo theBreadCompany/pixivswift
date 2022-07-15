@@ -57,7 +57,7 @@ public struct PixivIllustration: Codable {
     }
     private var createDate: String
     public var creationDate: Date {
-        if #available(macOS 10.12, *) {
+        if #available(macOS 10.12, iOS 10.0, *) {
             return ISO8601DateFormatter().date(from: createDate)!
         } else {
             // Fallback on earlier versions
