@@ -25,23 +25,18 @@ private let TOKEN_LIFETIME = 2700
 open class PixivDownloader {
     
     public let auto_relogin: Bool
-    
     public let _aapi: AppPixivAPI
     
     public var authed: Bool {
         !self._aapi.refresh_token.isEmpty
     }
     public var last_login: Date?
-    
     public var refresh_token: String?
     
     public init(auto_relogin: Bool = true) {
         self.auto_relogin = auto_relogin
-        
         self._aapi = AppPixivAPI()
-        
         self.last_login = nil
-        
         self.refresh_token = nil
     }
     /*
@@ -49,13 +44,9 @@ open class PixivDownloader {
      */
     public init(login_with_token refresh_token: String, auto_relogin: Bool = true) {
         self.auto_relogin = auto_relogin
-        
         self._aapi = AppPixivAPI()
-        
         self.last_login = nil
-        
         self.refresh_token = nil
-        
         self.login(refresh_token: refresh_token)
     }
     
@@ -322,7 +313,8 @@ open class PixivDownloader {
             request.resume()
             semaphore.wait() // wait for the response
             
-            return [200, 301, 302].contains((request.response as! HTTPURLResponse).statusCode) // if the response signals a success, continue with setting the succeeded url and wait for it to be written to the disk
+            guard let response = request.response as? HTTPURLResponse else { return nil }
+            return [200, 301, 302].contains(response.statusCode) // if the response signals a success, continue with setting the succeeded url and wait for it to be written to the disk
             ? directory.appendingPathComponent(url.lastPathComponent)
             : nil
         }
