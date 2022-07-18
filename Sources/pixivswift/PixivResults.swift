@@ -221,10 +221,121 @@ public struct UgoiraMetadata: Codable {
         public var medium: URL
     }
     
-    /// Contains the `URL` to the zip containing the indiviuual frames
+    /// Contains the `URL` to the zip containing the individual frames
     public var zipUrls: UgoiraURLs
     /// Contains the `UgoiraFrames`, which store information about each individual frame.
     public var frames: [UgoiraFrame]
+}
+
+public protocol PixivComment: Codable {
+    var id: Int { get }
+    var comment: String { get }
+    var date: String { get }
+    var user: PixivUserProperties { get }
+}
+
+public struct PixivNovelComment: PixivComment {
+    public var id: Int
+    public var comment: String
+    public var date: String
+    public var user: PixivUserProperties
+    public var has_replies: Bool
+    public var stamp: String?
+}
+
+public struct PixivIllustrationCommentResult: Codable {
+    
+    public struct PixivIllustrationComment: PixivComment {
+        public var id: Int
+        public var comment: String
+        public var date: String
+        public var user: PixivUserProperties
+    }
+
+    public var totalComments: Int
+    public var comments: [PixivIllustrationComment]
+    public var nextUrl: URL
+    public var commentAccessControl: Int
+}
+
+public struct PixivNotificationSettings: Codable {
+    
+    public struct PixivNotificationSetting: Codable {
+        public var id: Int
+        public var name: String
+        public var enabled: Bool
+    }
+    
+    public var deviceRegistered: Bool
+    public var types: [PixivNotificationSetting]
+}
+
+/**
+ This `struct` contains relevant information about new app updates or
+ important notices
+ */
+public struct PixivApplicationInformation: Codable {
+    
+    public struct PixivApplicationVersionInformation: Codable {
+        /// the latest publicly available version
+        public var latestVersion: String
+        /// whether the update is required, i.e. because new API methods got implemented
+        public var updateRequired: Bool
+        /// whether an update is available for the calling client
+        public var updateAvailable: Bool
+        /// the message to display when an update is available
+        public var updateMessage: String
+        /// the URL to the app store that hosts this version
+        public var storeUrl: URL
+        /// internal id to manage the update notices
+        public var noticeId: String
+        /// the message to display when the notice appears (if applicable)
+        public var noticeMessage: String
+        /// whether this notice is important
+        public var noticeImportant: Bool
+        /// whether a notice even exists
+        public var noticeExists: Bool
+    }
+    
+    /// the property containing all app revelant information
+    public var applicationInfo: PixivApplicationVersionInformation
+}
+
+/**
+ This `struct` stores the profile customization presets you can choose from
+ when editing your profile.
+ */
+public struct PixivProfilePresets: Codable {
+    
+    public struct PixivProfilePresetCategories: Codable {
+        
+        public struct PixivProfileAddressPreset: Codable {
+            public var id: Int
+            public var name: String
+            public var isGlobal: Bool
+        }
+        
+        public struct PixivProfileCountryPreset: Codable {
+            public var code: String
+            public var name: String
+        }
+        
+        public struct PixivProfileJobPreset: Codable {
+            public var id: Int
+            public var name: String
+        }
+        
+        public struct PixivProfileImagePreset: Codable {
+            public var medium: URL
+        }
+        
+        public var adresses: [PixivProfileAddressPreset]
+        public var countries: [PixivProfileCountryPreset]
+        public var jobs: [PixivProfileJobPreset]
+        public var defaultProfileImageUrls: PixivProfileImagePreset
+    }
+    
+    public var profilePresets: PixivProfilePresetCategories
 }
 
 public enum IllustrationAgeLimit: String, Codable {

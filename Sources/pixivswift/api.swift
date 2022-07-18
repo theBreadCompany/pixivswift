@@ -75,10 +75,7 @@ public class BasePixivAPI {
             req.httpBody = components.url!.query!.data(using: .utf8)
         }
         
-        #if DEBUG
-        guard let url = req.url else { throw PixivError.responseAcquirationFailed("Failed to build URL!") }
-        NSLog("Request-URL: %@", url.absoluteString)
-        #endif
+        log("Request-URL ", queryURL.absoluteString)
         
         var responseData: String = ""
         
@@ -100,13 +97,13 @@ public class BasePixivAPI {
         case 200, 301, 302:
             break
         case 400:
-            throw PixivError.responseAcquirationFailed("Bad request!")
+            throw PixivError.responseAcquirationFailed("Bad request, reason: \(responseData)")
         case 403:
             throw PixivError.RateLimitError
         case 404:
             throw PixivError.targetNotFound(data.description)
         default:
-            throw PixivError.unknownException("Request failed with HTTP Error \(response.statusCode); response: \(response)")
+            throw PixivError.unknownException("Request failed with HTTP Error \(response.statusCode); response: \(responseData)")
         }
         return responseData
     }
@@ -143,6 +140,7 @@ public class BasePixivAPI {
     #endif
     
     private func _auth(username: String = "", password: String = "", refresh_token: String = "") throws -> Dictionary<String, Any> {
+        assert(!refresh_token.isEmpty || (!username.isEmpty && !password.isEmpty), "auth() has been called, but without any credentials or refresh_token")
         let formatter = DateFormatter()
         formatter.setLocalizedDateFormatFromTemplate("y-m-dTH:m:s+00:00")
         let local_time = formatter.string(from: Date())
@@ -194,15 +192,14 @@ public class BasePixivAPI {
             }
         }
 #endif
-        if token.isEmpty {
-            throw PixivError.AuthErrors.authFailed( "auth() has been called, but without any credentials or refresh_token")
-        }
         
-        // I hate native JSON.
-        if let _access_token = token["access_token"] as? String, let _user_id = Int((token["user"] as? Dictionary<String, Any>)?["id"] as? String ?? "") , let _refresh_token = token["refresh_token"] as? String {
-            self.access_token = _access_token
-            self.user_id = _user_id
-            self.refresh_token = _refresh_token
+        // I hate native JSON. But no, I won't use third party libs, I know that there are great parsers for this, but I don't want dependencies :/
+        if let access_token = token["access_token"] as? String,
+           let user_id = Int((token["user"] as? Dictionary<String, Any>)?["id"] as? String ?? ""),
+           let refresh_token = token["refresh_token"] as? String {
+            self.access_token = access_token
+            self.user_id = user_id
+            self.refresh_token = refresh_token
         }
         
         return token
@@ -246,6 +243,13 @@ public class BasePixivAPI {
             
         }
         return false
+    }
+    
+    internal func log(_ messages: CVarArg...) {
+        #if DEBUG
+        let debugString = String(repeating: "%@", count: messages.count)
+        NSLog(debugString, messages)
+        #endif
     }
 }
 

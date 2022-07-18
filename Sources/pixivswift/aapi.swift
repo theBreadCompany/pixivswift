@@ -11,6 +11,9 @@ import Foundation
 /**
  This class provides functions similiar to the ones used in the official Pixiv App.
  It is strongly recommended to `auth` the instance before using any API calls.
+ 
+ The `notification` methods are currently under construction and should only be used with caution.
+ Unstable methods will be labeled as such in the docs or marked `internal` entirely.
  */
 public class AppPixivAPI: BasePixivAPI {
     
@@ -29,7 +32,7 @@ public class AppPixivAPI: BasePixivAPI {
     
     internal var decoder: JSONDecoder
     
-    internal func no_auth_requests_call(method: HttpMethod, url: URL, headers: Dictionary<String, String> = [:], params: Dictionary<String, String> = [:], data: Dictionary<String, String> = [:], req_auth: Bool = true) throws -> String {
+    public func no_auth_requests_call(method: HttpMethod, url: URL, headers: Dictionary<String, String> = [:], params: Dictionary<String, String> = [:], data: Dictionary<String, String> = [:], req_auth: Bool = true) throws -> String {
         var _headers = headers
         if self.hosts != "https://app-api.pixiv.net" {
             _headers["host"] = "app-api.pixiv.net"
@@ -49,7 +52,7 @@ public class AppPixivAPI: BasePixivAPI {
             return try self.requests_call(method: method, url: url, headers: _headers, params: params, data: data)
         }
     }
-
+    
     /**
      parse the next\_url contained in an API response to get its components
      
@@ -232,6 +235,8 @@ public class AppPixivAPI: BasePixivAPI {
         return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
     
+    public func illust_comment_add() {}
+    
     /**
      fetch illustrations related to a given ID
      - Parameter illust_id: ID of the illustration
@@ -317,6 +322,104 @@ public class AppPixivAPI: BasePixivAPI {
     }
     
     /**
+     fetch novels recommended for your account
+     - Parameter include_ranking_label: whether to include the ranking label
+     - Parameter filter: request for a specific platform
+     - Parameter max_bookmark_id_for_recommend: (optional) highest bookmark ID that should be considered for recommendations
+     - Parameter min_bookmark_id_for_recent_illust: (optional) lowest bookmark ID that should be considered for recent recommendations
+     - Parameter offset: (optional) offset of the requested illustrations
+     - Parameter include_ranking_illusts: (optional) also include ranked illustrations
+     - Parameter bookmark_illust_ids: (optional)  bookmark IDs of illustrations that should be considered
+     - Parameter include_privacy_policy: (optional) include the privacy policy
+     - Parameter req_auth: whether the API is required to be authorized
+     - returns: a PixivResponse with recommendations for the user
+     */
+    public func novel_recommended(include_ranking_label: Bool = true, filter: String = "for_ios", max_bookmark_id_for_recommend: Int? = nil, min_bookmark_id_for_recent_illust: Int? = nil, offset: Int? = nil, include_ranking_illusts: Bool? = nil, bookmark_illust_ids: Array<String>? = nil, include_privacy_policy: Bool? = nil, req_auth: Bool = true) throws -> PixivResult{
+        let url = URL(string: "\(self.hosts)/v1/novel/recommended")!
+        var params = [
+            "include_ranking_label": include_ranking_label.description,
+            "filter": filter
+        ]
+        if let max_bookmark_id_for_recommend = max_bookmark_id_for_recommend {
+            params["max_bookmark_id_for_recommend"] = max_bookmark_id_for_recommend.description
+        }
+        if let min_bookmark_id_for_recent_illust = min_bookmark_id_for_recent_illust {
+            params["min_bookmark_id_for_recent_illust"] = min_bookmark_id_for_recent_illust.description
+        }
+        if let offset = offset {
+            params["offset"] = offset.description
+        }
+        if let include_ranking_illusts = include_ranking_illusts {
+            params["include_ranking_illusts"] = include_ranking_illusts.description
+        }
+        
+        if !req_auth {
+            if let bookmark_illust_ids = bookmark_illust_ids {
+                if bookmark_illust_ids.count == 1 {
+                    params["bookmark_illust_ids"] = bookmark_illust_ids.first
+                } else if bookmark_illust_ids.count > 1 {
+                    params["bookmark_illust_ids"] = bookmark_illust_ids.description.replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "")
+                }
+            }
+        }
+        
+        if include_privacy_policy! {
+            params["include_privacy_policy"] = include_privacy_policy?.description
+        }
+        
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
+    }
+    /**
+     fetch novels recommended for your account
+     - Parameter include_ranking_label: whether to include the ranking label
+     - Parameter filter: request for a specific platform
+     - Parameter max_bookmark_id_for_recommend: (optional) highest bookmark ID that should be considered for recommendations
+     - Parameter min_bookmark_id_for_recent_illust: (optional) lowest bookmark ID that should be considered for recent recommendations
+     - Parameter offset: (optional) offset of the requested illustrations
+     - Parameter include_ranking_illusts: (optional) also include ranked illustrations
+     - Parameter bookmark_illust_ids: (optional)  bookmark IDs of illustrations that should be considered
+     - Parameter include_privacy_policy: (optional) include the privacy policy
+     - Parameter req_auth: whether the API is required to be authorized
+     - returns: a PixivResponse with recommendations for the user
+     */
+    public func manga_recommended(include_ranking_label: Bool = true, filter: String = "for_ios", max_bookmark_id_for_recommend: Int? = nil, min_bookmark_id_for_recent_illust: Int? = nil, offset: Int? = nil, include_ranking_illusts: Bool? = nil, bookmark_illust_ids: Array<String>? = nil, include_privacy_policy: Bool? = nil, req_auth: Bool = true) throws -> PixivResult{
+        let url = URL(string: "\(self.hosts)/v1/manga/recommended")!
+        var params = [
+            "include_ranking_label": include_ranking_label.description,
+            "filter": filter
+        ]
+        if let max_bookmark_id_for_recommend = max_bookmark_id_for_recommend {
+            params["max_bookmark_id_for_recommend"] = max_bookmark_id_for_recommend.description
+        }
+        if let min_bookmark_id_for_recent_illust = min_bookmark_id_for_recent_illust {
+            params["min_bookmark_id_for_recent_illust"] = min_bookmark_id_for_recent_illust.description
+        }
+        if let offset = offset {
+            params["offset"] = offset.description
+        }
+        if let include_ranking_illusts = include_ranking_illusts {
+            params["include_ranking_illusts"] = include_ranking_illusts.description
+        }
+        
+        if !req_auth {
+            if let bookmark_illust_ids = bookmark_illust_ids {
+                if bookmark_illust_ids.count == 1 {
+                    params["bookmark_illust_ids"] = bookmark_illust_ids.first
+                } else if bookmark_illust_ids.count > 1 {
+                    params["bookmark_illust_ids"] = bookmark_illust_ids.description.replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "")
+                }
+            }
+        }
+        
+        if include_privacy_policy! {
+            params["include_privacy_policy"] = include_privacy_policy?.description
+        }
+        
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8)) }
+    
+    /**
      fetch ranked illustrations
      - Parameter mode: timespan of the ranking
      - Parameter filter: request for a specific platform
@@ -366,7 +469,7 @@ public class AppPixivAPI: BasePixivAPI {
         ]
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params)
-        return try decoder.decode([IllustrationTag].self, from: Data(result.utf8))
+        return try decoder.decode(AutocompleteIllustrationTags.self, from: Data(result.utf8)).tags
     }
     
     /**
@@ -383,7 +486,9 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse with search results
      */
     public func search_illust(word: String, search_target: SearchMode = .partial_match_for_tags, sort: SortMode = .date_desc, duration: Duration? = nil, start_date: Date? = nil, end_date: Date? = nil, filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/search/illust")!
+        let url = sort == .popular_desc && (offset ?? 0 == 0)
+        ? URL(string: "\(self.hosts)/v1/search/popular-preview/illust")! // Yes, we can actually access the first 30 results, even without premium. This is the "7-day trial" when you (re)download the app
+        : URL(string: "\(self.hosts)/v1/search/illust")!
         var params = [
             "word": word,
             "search_target": search_target.rawValue,
@@ -472,6 +577,21 @@ public class AppPixivAPI: BasePixivAPI {
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         return try decoder.decode(PixivResult.self, from: Data(result.utf8))
+    }
+    
+    /**
+     Add comment to illustration
+     
+     - Parameter comment: The comment to populate under the illustration
+     */
+    public func novel_illust_add(comment: String, req_auth: Bool = true) throws -> PixivIllustrationCommentResult {
+        let url = URL(string: "\(self.hosts)/v1/illust/comment/add")!
+        let data = [
+            "comment": comment
+        ]
+        
+        let result = try self.no_auth_requests_call(method: .GET, url: url, data: data, req_auth: req_auth)
+        return try decoder.decode(PixivIllustrationCommentResult.self, from: Data(result.utf8))
     }
     
     /**
@@ -671,7 +791,7 @@ public class AppPixivAPI: BasePixivAPI {
     }
     
     /**
-    fetch metadata like frame delays of an ugoira illustration
+     fetch metadata like frame delays of an ugoira illustration
      - Parameter illust_id: ID of the illustration
      - Parameter req_auth: whether the API ist required to be authorized
      - returns: a PixivResponse containing the ugoiras metadata
@@ -763,6 +883,106 @@ public class AppPixivAPI: BasePixivAPI {
     }
     
     /**
+     Add comment to novel
+     
+     - Parameter comment: The comment to populate under the novel
+     */
+    public func novel_comment_add(comment: String, req_auth: Bool = true) throws -> PixivResult {
+        let url = URL(string: "\(self.hosts)/v1/novel/comment/add")!
+        let data = [
+            "comment": comment
+        ]
+        
+        let result = try self.no_auth_requests_call(method: .GET, url: url, data: data, req_auth: req_auth)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
+    }
+    
+    public func notification_has_unread() throws -> Bool {
+        let url = URL(string: "\(self.hosts)/v1/notification/has-unread-notifications")!
+        let result = try self.no_auth_requests_call(method: .POST, url: url)
+        return try decoder.decode(NotificationUnreadResult.self, from: Data(result.utf8)).hasUnreadNotifications
+    }
+    
+    
+    /**
+     Register user for notification
+     - returns: the topic of the curently logged in user
+     */
+    internal func notification_user_register() throws -> PixivNotificationRegistration {
+        let url = URL(string: "\(self.hosts)/v1/notification/user/register")!
+        let params = [
+            "timetone_offset": Date().offsetFromUTC().description
+        ]
+        let result = try self.no_auth_requests_call(method: .POST, url: url, params: params)
+        return try decoder.decode(PixivNotificationRegistration.self, from: Data(result.utf8))
+    }
+    
+    /**
+     - returns: The newest notifications, together with the latest seen illustration ID and latest seen novel ID
+     */
+    internal func notification_following() throws -> NotificationNewFromFollowing {
+        let url = URL(string: "\(self.hosts)/v1/notification/new-from-following")!
+        let result = try self.no_auth_requests_call(method: .POST, url: url)
+        return try decoder.decode(NotificationNewFromFollowing.self, from: Data(result.utf8))
+    }
+    
+    /**
+     list all notifications
+     WIP, HTTP 500 when pocking around... Code is probably not going to work, please stay patient...
+     */
+    internal func notification_following() throws -> [PixivNotification] {
+        let url = URL(string: "\(self.hosts)/v1/notification/list")!
+        let result = try self.no_auth_requests_call(method: .GET, url: url)
+        return try decoder.decode([PixivNotification].self, from: Data(result.utf8))
+    }
+    
+    /**
+     WIP, HTTP 500 when pocking around... Code is probably not going to work, please stay patient...
+     */
+    internal func notification_more() throws -> [PixivNotification] {
+        let url = URL(string: "\(self.hosts)/v1/notification/view-more")!
+        let result = try self.no_auth_requests_call(method: .GET, url: url)
+        return try decoder.decode([PixivNotification].self, from: Data(result.utf8))
+    }
+    
+    /**
+     fetch the user's settings
+     - returns: the user's settings
+     */
+    public func notification_settings() throws -> PixivNotificationSettings {
+        let url = URL(string: "\(self.hosts)/v1/notification/settings")!
+        let result = try self.no_auth_requests_call(method: .GET, url: url)
+        return try decoder.decode(_PixivNotificationSettings.self, from: Data(result.utf8)).notificationSettings // AAAAAAAA
+    }
+    
+    /**
+     edit… settings
+     - Parameter notificationID: the id of the `PixivNotificationSetting`
+     - Parameter setTo: the new state
+     
+     WIP as only turning off is possible, additionally only all at once
+     */
+    internal func notification_settings_edit(notificationID: Int, setTo value: Bool) throws {
+        let url = URL(string: "\(self.hosts)/v1/notification/settings/edit")!
+        let data = [
+            "id": notificationID.description,
+            "enabled": value.description
+        ]
+        let _ = try self.no_auth_requests_call(method: .GET, url: url, data: data)
+    }
+    
+    /**
+     fetch application info
+     - Parameter platform: the OS of the app
+     - returns: information about the current app release
+     */
+    public func application_info(platform: AppPlatform) throws -> PixivApplicationInformation {
+        let url = URL(string: "\(self.hosts)/v1/application-info/\(platform.rawValue)")!
+        let result = try self.no_auth_requests_call(method: .GET, url: url)
+        return try decoder.decode(PixivApplicationInformation.self, from: Data(result.utf8))
+    }
+    
+    /**
      fetch a showcase article
      - Parameter showcase_id: ID of the showcase
      - returns: a PixivResponse containing the showcase
@@ -783,7 +1003,7 @@ public class AppPixivAPI: BasePixivAPI {
 
 extension AppPixivAPI {
     
-    /// `struct` defining several strategies to let the server sort content
+    /// `enum` defining several strategies to let the server sort content
     public enum SortMode: String {
         /// oldest content first
         case date_asc
@@ -793,7 +1013,7 @@ extension AppPixivAPI {
         case popular_desc
     }
     
-    /// `struct` defining tolerances for searches via `AppPixivAPI.search_illust(word:search_target:sort:duration:start_date:end_date:filter:offset:req_auth:)`
+    /// `enum` defining tolerances for searches via `AppPixivAPI.search_illust(word:search_target:sort:duration:start_date:end_date:filter:offset:req_auth:)`
     public enum SearchMode: String {
         /// applies if post _also contains_ specified `word`s
         case partial_match_for_tags
@@ -803,7 +1023,7 @@ extension AppPixivAPI {
         case title_and_caption
     }
     
-    /// `struct` defining the search perios for searches via `AppPixivAPI.search_illust(word:search_target:sort:duration:start_date:end_date:filter:offset:req_auth:)`
+    /// `enum` defining the search perios for searches via `AppPixivAPI.search_illust(word:search_target:sort:duration:start_date:end_date:filter:offset:req_auth:)`
     public enum Duration: String {
         /// only search for posts published in the last 24 h
         case within_last_day
@@ -811,5 +1031,13 @@ extension AppPixivAPI {
         case within_last_week
         /// only search for posts published in the last 30 days
         case within_last_month
+    }
+    
+    /// `enum` defining the different OSs the app is released for
+    public enum AppPlatform: String {
+        /// Apple's iOS
+        case ios
+        /// Google's Android
+        case android
     }
 }

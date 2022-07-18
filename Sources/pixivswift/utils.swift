@@ -62,10 +62,16 @@ extension String {
 }
 
 extension Array {
-    /// Combine two arrays with the same `Element`.
+    /// Combine an array with an entity of the same `Element`.
     static func +(lhs: [Element], rhs: Element) -> [Element] {
         var lhs = lhs
         lhs.append(contentsOf: [rhs])
         return lhs
+    }
+}
+
+extension Date {
+    func offsetFromUTC() -> Int {
+        DateFormatter().timeZone.secondsFromGMT(for: self)/3600
     }
 }
