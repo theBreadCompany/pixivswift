@@ -4,6 +4,7 @@
 //
 //  Created by Fabio Mauersberger on 15.07.22.
 //
+// TODO: Use a custom metadata section to store the full illustration metadata in the image
 
 import Foundation
 import ImageIO
@@ -25,7 +26,7 @@ extension PixivDownloader {
      - Parameter illust_path: path to the image
      - Parameter illust_data: Data object containing image data that should be update (illust_path is nescessary anyway as this function also writes the new data)
      */
-    open func meta_update(metadata: PixivIllustration, illust_url: URL, illust_data: Data? = nil){
+    public func meta_update(metadata: PixivIllustration, illust_url: URL, illust_data: Data? = nil){
         let file_url: URL = illust_url
         let image: CGImageSource = illust_data != nil
         ? CGImageSourceCreateWithData(illust_data! as CFData, nil)!
@@ -48,7 +49,11 @@ extension PixivDownloader {
         properties.updateValue([
             "Artist": metadata.user.name,
             "DateTime": metadata.creationDate
-        ] as [String:Any], forKey: "{TIFF}")
+        ] as [String: Any], forKey: "{TIFF}")
+        
+        properties.updateValue([
+            "metadata": try! JSONEncoder().encode(metadata)
+        ] as [String: Any], forKey: "{Pixiv}")
         
         var img_type: CFString
         switch metadata.illustrationURLs.first!.original.pathExtension {
@@ -67,5 +72,37 @@ extension PixivDownloader {
         CGImageDestinationFinalize(new_image!)
     }
     
-    
+    /**
+     Extract metadata from file
+     
+     - Parameter file: The URL to the source file
+     - Parameter identifyByFileName: Whether it should be tried to identify the image by the file name
+     - returns: The extracted image identity or `nil` if the extraction failed
+     
+     identifyByFileName is kind of unsafe because the name can be changed and lost easily and may be considered unsafe.
+     If it is allowed anyway and identification fails, all the other identification methods are tried as well.
+     */
+    public func metaExtract(from file: URL, identifyByFileName: Bool = false) -> PixivIllustration? {
+        guard FileManager.default.fileExists(atPath: file.path), let source = CGImageSourceCreateWithURL(file as CFURL, nil) else { return nil }
+        
+        // The "unsafe" way: Check if the filename has the correct format to may be a pixiv illustration
+        if identifyByFileName {
+            let components = file.lastPathComponent.components(separatedBy: "_")
+            if components.count == 2, let id = Int(components.first!), String(id).count >= 5 && String(id).count <= 9 {
+                return try? self.illustration(illust_id: id)
+            }
+        }
+        
+        guard let properties = CGImageSourceCopyProperties(source, nil) as? Dictionary<String, Any>,
+              let iptcData = properties["{IPTC}"] as? [String: Any] else { return nil }
+        
+        // If there is a correct URL you can basically reconstruct all the metadata and verify that this image is from pixiv
+        guard let url = iptcData["Source"] as? URL, url.host == "pixiv.net" else { return nil }
+        
+        if let pixivData = properties["{Pixiv}"] as? [String:Any], let illustData = pixivData["metadata"] as? Data {
+            return try? JSONDecoder().decode(PixivIllustration.self, from: illustData)
+        } else {
+            return try? self.illustration(illust_id: Int(url.lastPathComponent.components(separatedBy: "_").first ?? "") ?? 0)
+        }
+    }
 }
