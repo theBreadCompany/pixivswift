@@ -21,7 +21,7 @@ public class BasePixivAPI {
     public var user_id: Int
     public var refresh_token: String
     
-    public var hosts: String
+    public var hosts: URL?
     
     
     public init() {
@@ -33,7 +33,7 @@ public class BasePixivAPI {
         self.user_id = 0
         self.refresh_token = ""
         
-        self.hosts = ""
+        self.hosts = nil
     }
     
     
@@ -62,7 +62,7 @@ public class BasePixivAPI {
     
     internal func requests_call(method: HttpMethod, url: URL, headers: Dictionary<String, Any> = [:], params: Dictionary<String, Any> = [:], data: Dictionary<String, Any> = [:], stream: Bool = false) throws -> String {
         
-        var _url = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        var _url = URLComponents(url: url, resolvingAgainstBaseURL: url.baseURL != nil)
         _url?.queryItems = params.map { URLQueryItem(name: $0, value: ($1 as! String)) }
         guard let queryURL = _url?.url else { throw PixivError.responseAcquirationFailed("Failed to build URL!") }
         var req = URLRequest(url: queryURL)
@@ -150,11 +150,11 @@ public class BasePixivAPI {
             "X-Client-Hash": (local_time + self.hash_secret).MD5
         ]
         
-        var auth_hosts: String
-        if self.hosts.isEmpty || self.hosts == "https://app-api.pixiv.net" {
-            auth_hosts = "https://oauth.secure.pixiv.net"
+        var auth_hosts: URL
+        if self.hosts == nil || self.hosts == URL(string: "https://app-api.pixiv.net/")! {
+            auth_hosts = URL(string: "https://oauth.secure.pixiv.net")!
         } else {
-            auth_hosts = self.hosts
+            auth_hosts = self.hosts!
             headers["host"] = "oauth.secure.pixiv.net"
         }
         
