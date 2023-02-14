@@ -27,14 +27,20 @@ public class AppPixivAPI: BasePixivAPI {
         self.decoder = JSONDecoder()
         self.decoder.keyDecodingStrategy = .convertFromSnakeCase
         super.init()
-        self.hosts = "https://app-api.pixiv.net"
+        self.hosts = URL(string: "https://app-api.pixiv.net/")!
     }
     
     internal var decoder: JSONDecoder
     
+#if DEBUG // yes, this is literally just for... research
+public func engineer(method: HttpMethod, url: URL, headers: Dictionary<String, String> = [:], params: Dictionary<String, String> = [:], data: Dictionary<String, String> = [:], stream: Bool = false) throws -> String {
+    try self.no_auth_requests_call(method: method, url: url, headers: headers, params: params, data: data)
+}
+#endif
+    
     public func no_auth_requests_call(method: HttpMethod, url: URL, headers: Dictionary<String, String> = [:], params: Dictionary<String, String> = [:], data: Dictionary<String, String> = [:], req_auth: Bool = true) throws -> String {
         var _headers = headers
-        if self.hosts != "https://app-api.pixiv.net" {
+        if self.hosts != URL(string: "https://app-api.pixiv.net/")! {
             _headers["host"] = "app-api.pixiv.net"
         }
         if headers["User-Agent"] == nil && headers["user-agent"] == nil {
@@ -84,7 +90,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: the user's information as a PixivResponse
      */
     public func user_detail(user_id: Int, filter: String = "for_ios", req_auth: Bool = true) throws -> PixivResult{
-        let url = URL(string: "\(self.hosts)/v1/user/detail")!
+        let url = URL(string: "v1/user/detail", relativeTo: self.hosts)!
         let params = [
             "user_id": user_id.description,
             "filter": filter
@@ -107,7 +113,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: the user's content as a PixivResponse
      */
     public func user_illusts(user_id: Int, type: String = "illust", filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult{
-        let url = URL(string: "\(self.hosts)/v1/user/illusts")!
+        let url = URL(string: "v1/user/illusts", relativeTo: self.hosts)!
         var params = [
             "user_id": user_id.description,
             "filter": filter
@@ -136,7 +142,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: the user's bookmarks as a PixivResponse
      */
     public func user_bookmarks_illust(user_id: Int, restrict: Publicity = .public, filter: String = "for_ios", offset: Int = 0, max_bookmark: Int? = nil, tag: String? = nil, req_true: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/user/bookmarks/illust")!
+        let url = URL(string: "v1/user/bookmarks/illust", relativeTo: self.hosts)!
         var params = [
             "user_id": user_id.description,
             "restrict": restrict.rawValue,
@@ -164,7 +170,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse with related users to the given ID
      */
     public func user_related(seed_user_id: Int, filter: String = "for_ios", offset: Int = 0, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/user/related")!
+        let url = URL(string: "v1/user/related", relativeTo: self.hosts)!
         let params = [
             "filter": filter,
             "offset": offset.description,
@@ -172,7 +178,7 @@ public class AppPixivAPI: BasePixivAPI {
         ]
         let r = try no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
         var parsed_r = try decoder.decode(PixivResult.self, from: Data(r.utf8))
-        parsed_r.nextURL = URL(string: "\(self.hosts)/v1/user/related?filter=" + params["filter"]! + "&offset=\(Int(params["offset"]!)!+30)&seed_user_id=" + params["seed_user_id"]!)!
+        parsed_r.nextURL = URL(string: "v1/user/related?filter=" + params["filter"]! + "&offset=\(Int(params["offset"]!)!+30)&seed_user_id=" + params["seed_user_id"]!)!
         return parsed_r
     }
     
@@ -185,7 +191,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse with the newest content of the illustrations of the users you follow
      */
     public func illust_follow(restrict: Publicity = .public, offset: Int = 0, req_auth: Bool = true) throws -> PixivResult{
-        let url = URL(string: "\(self.hosts)/v2/illust/follow")!
+        let url = URL(string: "v2/illust/follow", relativeTo: self.hosts)!
         let params = [
             "restrict": restrict.rawValue,
             "offset": offset.description
@@ -202,7 +208,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse with the requested details
      */
     public func illust_detail(illust_id: Int, req_auth: Bool = true) throws -> PixivResult{
-        let url = URL(string: "\(self.hosts)/v1/illust/detail")!
+        let url = URL(string: "v1/illust/detail", relativeTo: self.hosts)!
         let params = [
             "illust_id": illust_id.description
         ]
@@ -220,7 +226,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: the comments of the illustration as a PixivResponse
      */
     public func illust_comments(illust_id: Int, offset: Int? = nil, include_total_comments: Bool? = nil, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/illust/comments")!
+        let url = URL(string: "v1/illust/comments", relativeTo: self.hosts)!
         var params = [
             "illust_id": illust_id.description
         ]
@@ -247,7 +253,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse with similiar illustrations
      */
     public func illust_related(illust_id: Int, filter: String = "for_ios", seed_illust_ids: Array<Int>? = nil, viewed: Array<Int>? = nil, offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v2/illust/related")!
+        let url = URL(string: "v2/illust/related", relativeTo: self.hosts)!
         var params = [
             "illust_id": illust_id.description,
             "filter": filter,
@@ -281,9 +287,9 @@ public class AppPixivAPI: BasePixivAPI {
     public func illust_recommended(content_type: String = "illust", include_ranking_label: Bool = true, filter: String = "for_ios", max_bookmark_id_for_recommend: Int? = nil, min_bookmark_id_for_recent_illust: Int? = nil, offset: Int? = nil, include_ranking_illusts: Bool? = nil, bookmark_illust_ids: Array<String>? = nil, include_privacy_policy: Bool? = nil, req_auth: Bool = true) throws -> PixivResult{
         let url: URL
         if req_auth {
-            url = URL(string: "\(self.hosts)/v1/illust/recommended")!
+            url = URL(string: "v1/illust/recommended", relativeTo: self.hosts)!
         } else {
-            url = URL(string: "\(self.hosts)/v1/illust/recommended-nologin")!
+            url = URL(string: "v1/illust/recommended-nologin", relativeTo: self.hosts)!
         }
         var params = [
             "content_type": content_type,
@@ -335,7 +341,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse with recommendations for the user
      */
     public func novel_recommended(include_ranking_label: Bool = true, filter: String = "for_ios", max_bookmark_id_for_recommend: Int? = nil, min_bookmark_id_for_recent_illust: Int? = nil, offset: Int? = nil, include_ranking_illusts: Bool? = nil, bookmark_illust_ids: Array<String>? = nil, include_privacy_policy: Bool? = nil, req_auth: Bool = true) throws -> PixivResult{
-        let url = URL(string: "\(self.hosts)/v1/novel/recommended")!
+        let url = URL(string: "v1/novel/recommended", relativeTo: self.hosts)!
         var params = [
             "include_ranking_label": include_ranking_label.description,
             "filter": filter
@@ -384,7 +390,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse with recommendations for the user
      */
     public func manga_recommended(include_ranking_label: Bool = true, filter: String = "for_ios", max_bookmark_id_for_recommend: Int? = nil, min_bookmark_id_for_recent_illust: Int? = nil, offset: Int? = nil, include_ranking_illusts: Bool? = nil, bookmark_illust_ids: Array<String>? = nil, include_privacy_policy: Bool? = nil, req_auth: Bool = true) throws -> PixivResult{
-        let url = URL(string: "\(self.hosts)/v1/manga/recommended")!
+        let url = URL(string: "v1/manga/recommended", relativeTo: self.hosts)!
         var params = [
             "include_ranking_label": include_ranking_label.description,
             "filter": filter
@@ -428,7 +434,7 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter req_auth: whether the API is required to be authorized
      */
     public func illust_ranking(mode: String = "day", filter: String = "for_ios", date: Date? = nil, offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult{
-        let url = URL(string: "\(self.hosts)/v1/illust/ranking")!
+        let url = URL(string: "v1/illust/ranking", relativeTo: self.hosts)!
         var params = [
             "mode": mode,
             "filter": filter
@@ -452,7 +458,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse with the currently trending tags
      */
     public func trending_tags_illust(filter: String = "for_ios", req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/trending-tags/illust")!
+        let url = URL(string: "v1/trending-tags/illust", relativeTo: self.hosts)!
         let params = [
             "filter": filter
         ]
@@ -462,7 +468,7 @@ public class AppPixivAPI: BasePixivAPI {
     }
     
     public func search_tag(word: String, filter: String = "for_ios", req_auth: Bool = true) throws -> [IllustrationTag] {
-        let url = URL(string: "\(self.hosts)/v2/search/autocomplete")!
+        let url = URL(string: "v2/search/autocomplete", relativeTo: self.hosts)!
         let params = [
             "word": word,
             "filter": filter
@@ -487,8 +493,8 @@ public class AppPixivAPI: BasePixivAPI {
      */
     public func search_illust(word: String, search_target: SearchMode = .partial_match_for_tags, sort: SortMode = .date_desc, duration: Duration? = nil, start_date: Date? = nil, end_date: Date? = nil, filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult {
         let url = sort == .popular_desc && (offset ?? 0 == 0)
-        ? URL(string: "\(self.hosts)/v1/search/popular-preview/illust")! // Yes, we can actually access the first 30 results, even without premium. This is the "7-day trial" when you (re)download the app
-        : URL(string: "\(self.hosts)/v1/search/illust")!
+        ? URL(string: "v1/search/popular-preview/illust", relativeTo: self.hosts)! // Yes, we can actually access the first 10 results, even without premium. This is the "7-day trial" when you (re)download the app
+        : URL(string: "v1/search/illust", relativeTo: self.hosts)!
         var params = [
             "word": word,
             "search_target": search_target.rawValue,
@@ -527,7 +533,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse with search results
      */
     public func search_novel(word: String, search_target: SearchMode = .partial_match_for_tags, sort: SortMode = .date_desc, merge_plain_keyword_results: Bool = true, include_translated_tag_results: Bool = true, start_date: Date? = nil, end_date: Date? = nil, filter: String? = nil, offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/search/novel")!
+        let url = URL(string: "v1/search/novel", relativeTo: self.hosts)!
         var params = [
             "word": word,
             "search_targets": search_target.rawValue,
@@ -561,7 +567,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse containing potential search results
      */
     public func search_user(word: String, sort: SortMode = .date_desc, duration: Duration? = nil, filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/search/user")!
+        let url = URL(string: "v1/search/user", relativeTo: self.hosts)!
         var params = [
             "word": word,
             "sort": sort.rawValue,
@@ -585,7 +591,7 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter comment: The comment to populate under the illustration
      */
     public func novel_illust_add(comment: String, req_auth: Bool = true) throws -> PixivIllustrationCommentResult {
-        let url = URL(string: "\(self.hosts)/v1/illust/comment/add")!
+        let url = URL(string: "v1/illust/comment/add", relativeTo: self.hosts)!
         let data = [
             "comment": comment
         ]
@@ -601,7 +607,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse containing the details
      */
     public func illust_bookmark_detail(illust_id: Int, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v2/illust/bookmark/detail")!
+        let url = URL(string: "v2/illust/bookmark/detail", relativeTo: self.hosts)!
         let params = [
             "illust_id": illust_id.description
         ]
@@ -619,7 +625,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse
      */
     public func illust_bookmark_add(illust_id: Int, restrict: Publicity = .public, tags: Array<String>? = nil, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v2/illust/bookmark/add")!
+        let url = URL(string: "v2/illust/bookmark/add", relativeTo: self.hosts)!
         var data = [
             "illust_id": illust_id.description,
             "restrict": restrict.rawValue
@@ -643,7 +649,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse
      */
     public func illust_bookmark_delete(illust_id: Int, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/illust/bookmark/delete")!
+        let url = URL(string: "v1/illust/bookmark/delete", relativeTo: self.hosts)!
         let data = [
             "illust_id": illust_id.description
         ]
@@ -660,7 +666,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse
      */
     public func user_follow_add(user_id: Int, restrict: Publicity = .public, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/user/follow/add")!
+        let url = URL(string: "v1/user/follow/add", relativeTo: self.hosts)!
         let data = [
             "user_id": user_id.description,
             "restrict": restrict.rawValue
@@ -676,7 +682,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse
      */
     public func user_follow_delete(user_id: Int, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/user/follow/delete")!
+        let url = URL(string: "v1/user/follow/delete", relativeTo: self.hosts)!
         let data = [
             "user_id": user_id.description
         ]
@@ -693,7 +699,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse containing the tags
      */
     public func user_bookmark_tags_illust(restrict: Publicity = .public, offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/user/bookmark-tags/illust")!
+        let url = URL(string: "v1/user/bookmark-tags/illust", relativeTo: self.hosts)!
         var params = [
             "restrict": restrict.rawValue
         ]
@@ -714,7 +720,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse containing the users
      */
     public func user_following(user_id: Int, restrict: Publicity = .public, offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/user/following")!
+        let url = URL(string: "v1/user/following", relativeTo: self.hosts)!
         var params = [
             "user_id": user_id.description,
             "restrict": restrict.rawValue
@@ -736,7 +742,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse containing the users
      */
     public func user_follow(user_id: Int, filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/user/follower")!
+        let url = URL(string: "v1/user/follower", relativeTo: self.hosts)!
         var params = [
             "user_id": user_id.description,
             "filter": filter
@@ -756,7 +762,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse containing the user's mypixiv content
      */
     public func user_mypixiv(user_id: Int, offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/user/mypixiv")!
+        let url = URL(string: "v1/user/mypixiv", relativeTo: self.hosts)!
         var params = [
             "user_id": user_id.description
         ]
@@ -777,7 +783,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse containing the users
      */
     public func user_list(user_id: Int, filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v2/user/list")!
+        let url = URL(string: "v2/user/list", relativeTo: self.hosts)!
         var params = [
             "user_id": user_id.description,
             "filter": filter
@@ -797,7 +803,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse containing the ugoiras metadata
      */
     public func ugoira_metadata(illust_id: Int, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/ugoira/metadata")!
+        let url = URL(string: "v1/ugoira/metadata", relativeTo: self.hosts)!
         let params = [
             "illust_id": illust_id.description
         ]
@@ -815,7 +821,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse containing the user's novels
      */
     public func user_novels(user_id: Int, filter: String = "for_ios", offset: Int? = nil, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/user/novels")!
+        let url = URL(string: "v1/user/novels", relativeTo: self.hosts)!
         var params = [
             "user_id": user_id.description,
             "filter": filter
@@ -837,7 +843,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse containing the series
      */
     public func novel_series(series_id: Int, filter: String = "for_ios", last_order: String? = nil, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v2/novel/series")!
+        let url = URL(string: "v2/novel/series", relativeTo: self.hosts)!
         var params = [
             "series_id": series_id.description,
             "filter": filter
@@ -857,7 +863,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse containing the novel details
      */
     public func novel_details(novel_id: Int, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v2/novel/detail")!
+        let url = URL(string: "v2/novel/detail", relativeTo: self.hosts)!
         let params = [
             "novel_id": novel_id.description
         ]
@@ -873,7 +879,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse containing the novel text
      */
     public func novel_text(novel_id: Int, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/novel/text")!
+        let url = URL(string: "v1/novel/text", relativeTo: self.hosts)!
         let params = [
             "novel_id": novel_id.description
         ]
@@ -888,7 +894,7 @@ public class AppPixivAPI: BasePixivAPI {
      - Parameter comment: The comment to populate under the novel
      */
     public func novel_comment_add(comment: String, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "\(self.hosts)/v1/novel/comment/add")!
+        let url = URL(string: "/v1/novel/comment/add", relativeTo: self.hosts)!
         let data = [
             "comment": comment
         ]
@@ -898,7 +904,7 @@ public class AppPixivAPI: BasePixivAPI {
     }
     
     public func notification_has_unread() throws -> Bool {
-        let url = URL(string: "\(self.hosts)/v1/notification/has-unread-notifications")!
+        let url = URL(string: "v1/notification/has-unread-notifications", relativeTo: self.hosts)!
         let result = try self.no_auth_requests_call(method: .POST, url: url)
         return try decoder.decode(NotificationUnreadResult.self, from: Data(result.utf8)).hasUnreadNotifications
     }
@@ -909,7 +915,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: the topic of the curently logged in user
      */
     internal func notification_user_register() throws -> PixivNotificationRegistration {
-        let url = URL(string: "\(self.hosts)/v1/notification/user/register")!
+        let url = URL(string: "v1/notification/user/register", relativeTo: self.hosts)!
         let params = [
             "timetone_offset": Date().offsetFromUTC().description
         ]
@@ -921,7 +927,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: The newest notifications, together with the latest seen illustration ID and latest seen novel ID
      */
     internal func notification_following() throws -> NotificationNewFromFollowing {
-        let url = URL(string: "\(self.hosts)/v1/notification/new-from-following")!
+        let url = URL(string: "v1/notification/new-from-following", relativeTo: self.hosts)!
         let result = try self.no_auth_requests_call(method: .POST, url: url)
         return try decoder.decode(NotificationNewFromFollowing.self, from: Data(result.utf8))
     }
@@ -931,7 +937,7 @@ public class AppPixivAPI: BasePixivAPI {
      WIP, HTTP 500 when pocking around... Code is probably not going to work, please stay patient...
      */
     internal func notification_following() throws -> [PixivNotification] {
-        let url = URL(string: "\(self.hosts)/v1/notification/list")!
+        let url = URL(string: "v1/notification/list", relativeTo: self.hosts)!
         let result = try self.no_auth_requests_call(method: .GET, url: url)
         return try decoder.decode([PixivNotification].self, from: Data(result.utf8))
     }
@@ -940,7 +946,7 @@ public class AppPixivAPI: BasePixivAPI {
      WIP, HTTP 500 when pocking around... Code is probably not going to work, please stay patient...
      */
     internal func notification_more() throws -> [PixivNotification] {
-        let url = URL(string: "\(self.hosts)/v1/notification/view-more")!
+        let url = URL(string: "v1/notification/view-more", relativeTo: self.hosts)!
         let result = try self.no_auth_requests_call(method: .GET, url: url)
         return try decoder.decode([PixivNotification].self, from: Data(result.utf8))
     }
@@ -950,7 +956,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: the user's settings
      */
     public func notification_settings() throws -> PixivNotificationSettings {
-        let url = URL(string: "\(self.hosts)/v1/notification/settings")!
+        let url = URL(string: "v1/notification/settings", relativeTo: self.hosts)!
         let result = try self.no_auth_requests_call(method: .GET, url: url)
         return try decoder.decode(_PixivNotificationSettings.self, from: Data(result.utf8)).notificationSettings // AAAAAAAA
     }
@@ -963,7 +969,7 @@ public class AppPixivAPI: BasePixivAPI {
      WIP as only turning off is possible, additionally only all at once
      */
     internal func notification_settings_edit(notificationID: Int, setTo value: Bool) throws {
-        let url = URL(string: "\(self.hosts)/v1/notification/settings/edit")!
+        let url = URL(string: "v1/notification/settings/edit", relativeTo: self.hosts)!
         let data = [
             "id": notificationID.description,
             "enabled": value.description
@@ -977,7 +983,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: information about the current app release
      */
     public func application_info(platform: AppPlatform) throws -> PixivApplicationInformation {
-        let url = URL(string: "\(self.hosts)/v1/application-info/\(platform.rawValue)")!
+        let url = URL(string: "v1/application-info/\(platform.rawValue)", relativeTo: self.hosts)!
         let result = try self.no_auth_requests_call(method: .GET, url: url)
         return try decoder.decode(PixivApplicationInformation.self, from: Data(result.utf8))
     }
@@ -988,7 +994,7 @@ public class AppPixivAPI: BasePixivAPI {
      - returns: a PixivResponse containing the showcase
      */
     public func showcase_article(showcase_id: Int) throws -> PixivResult {
-        let url = URL(string: "https://www.pixiv.net/ajax/showcase/article")!
+        let url = URL(string: "https://www.pixiv.net/ajax/showcase/article", relativeTo: self.hosts)!
         let headers = [
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36",
             "Referer": "https://www.pixiv.net"
