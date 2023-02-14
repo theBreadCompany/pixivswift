@@ -894,14 +894,46 @@ public func engineer(method: HttpMethod, url: URL, headers: Dictionary<String, S
      - Parameter comment: The comment to populate under the novel
      */
     public func novel_comment_add(comment: String, req_auth: Bool = true) throws -> PixivResult {
-        let url = URL(string: "/v1/novel/comment/add", relativeTo: self.hosts)!
+        let url = URL(string: "v1/novel/comment/add", relativeTo: self.hosts)!
         let data = [
             "comment": comment
         ]
         
-        let result = try self.no_auth_requests_call(method: .GET, url: url, data: data, req_auth: req_auth)
+        let result = try self.no_auth_requests_call(method: .POST, url: url, data: data, req_auth: req_auth)
         return try decoder.decode(PixivResult.self, from: Data(result.utf8))
     }
+    /**
+     Add comment to novel
+     
+     - Parameter comment: The comment to populate under the novel
+     */
+    public func novel_comment_delete(comment: String, req_auth: Bool = true) throws -> PixivResult {
+        let url = URL(string: "v1/novel/comment/delete", relativeTo: self.hosts)!
+        let data = [
+            "comment": comment
+        ]
+        
+        let result = try self.no_auth_requests_call(method: .POST, url: url, data: data, req_auth: req_auth)
+        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
+    }
+    
+    public func upload_novel_covers() throws -> PixivNovelCovers {
+        let url = URL(string: "v1/upload/novel/covers", relativeTo: self.hosts)!
+        let params: Dictionary<String, String> = [:]
+        let data: Dictionary<String, String> = [:]
+        let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, data: data)
+        return try decoder.decode(PixivNovelCovers.self, from: Data(result.utf8))
+    }
+    
+    /*
+    public func novel_drafts_detail(novel_id: Int) throws -> <#ResultType#> {
+        let url = URL(string: <#Endpoint#>, relativeTo: <#Host#>)!
+        let params: Dictionary<String, String> = [:]
+        let data: Dictionary<String, String> = [:]
+        let result = try self.no_auth_requests_call(method: <#T##HttpMethod#>, url: url, params: params, data: data)
+        return try decoder.decode(<#ResultType.self#>, from: result)
+    }
+     */
     
     public func notification_has_unread() throws -> Bool {
         let url = URL(string: "v1/notification/has-unread-notifications", relativeTo: self.hosts)!

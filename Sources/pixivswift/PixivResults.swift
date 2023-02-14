@@ -338,6 +338,16 @@ public struct PixivProfilePresets: Codable {
     public var profilePresets: PixivProfilePresetCategories
 }
 
+public struct PixivNovelCovers: Codable {
+    
+    public struct PixivNovelCover: Codable {
+        public var id: Int
+        public var imageUrl: URL
+    }
+    
+    public var covers: [PixivNovelCover]
+}
+
 public enum IllustrationAgeLimit: String, Codable {
     case all, r18, r18g
 }
