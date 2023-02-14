@@ -31,6 +31,8 @@ The project is documented, everything can be found in Xcode's Developer Document
 - write more tests
 - actually finally finish the fix for headless login
 - introduce a proper repo structure (like a dev branch) and version management (patches are always pushed without updating the tag, meaning clients using this pkg will have the bugs that are solved in HEAD (aaa))
+- swiftify method and class/struct names
+- de-curse API methods (underlying request methods use dispatch semaphores in a cursed way, will fix that)
 
 ## Announcements
 I'll release a repo of an iOS/macOS app using this API soon.

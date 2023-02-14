@@ -2,7 +2,7 @@
 //  PixivResults.swift
 //  pixivswift
 //
-//  Created by Fabio Mauersberger on 03.10.21.
+//  Created by theBreadCompany on 03.10.21.
 //
 
 import Foundation
@@ -100,6 +100,8 @@ public struct PixivIllustration: Codable {
         }
     }
     public var caption: String
+    public var illustAiType: Bool
+    public var illustBookStyle: Bool
 }
 
 /**
@@ -121,7 +123,7 @@ public struct PixivUserProperties: Codable {
     /// This is the actual name that is being displayed when you visit an artist's page.
     public var name: String
     /// This property tells whether the logged in user follows the artist; recommended to update manually if the status switches.
-    public var isFollowed: Bool
+    public var isFollowed: Bool?
     /// This name is a more or less internal property. It is more a unique identifier than a user interfacable value, one wouldnt even be able to find an artist via `AppPixivAPI.search_user(word:)`.
     public var account: String
 }
