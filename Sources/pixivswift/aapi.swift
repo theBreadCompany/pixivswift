@@ -225,7 +225,7 @@ public func engineer(method: HttpMethod, url: URL, headers: Dictionary<String, S
      - Parameter req_auth: whether the API is required to be authorized
      - returns: the comments of the illustration as a PixivResponse
      */
-    public func illust_comments(illust_id: Int, offset: Int? = nil, include_total_comments: Bool? = nil, req_auth: Bool = true) throws -> PixivResult {
+    public func illust_comments(illust_id: Int, offset: Int? = nil, include_total_comments: Bool? = nil, req_auth: Bool = true) throws -> PixivIllustrationCommentResult {
         let url = URL(string: "v1/illust/comments", relativeTo: self.hosts)!
         var params = [
             "illust_id": illust_id.description
@@ -238,7 +238,7 @@ public func engineer(method: HttpMethod, url: URL, headers: Dictionary<String, S
         }
         
         let result = try self.no_auth_requests_call(method: .GET, url: url, params: params, req_auth: req_auth)
-        return try decoder.decode(PixivResult.self, from: Data(result.utf8))
+        return try decoder.decode(PixivIllustrationCommentResult.self, from: Data(result.utf8))
     }
     
     public func illust_comment_add() {}

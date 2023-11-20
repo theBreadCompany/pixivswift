@@ -96,7 +96,7 @@ extension AppPixivAPI {
      - Parameter req_auth: whether the API is required to be authorized
      - returns: the comments of the illustration as a PixivResponse
      */
-    public func illust_comments(illust_id: Int, offset: Int? = nil, include_total_comments: Bool? = nil, req_auth: Bool = true, completionHandler: @escaping (PixivResult) -> Void) throws {
+    public func illust_comments(illust_id: Int, offset: Int? = nil, include_total_comments: Bool? = nil, req_auth: Bool = true, completionHandler: @escaping (PixivIllustrationCommentResult) -> Void) throws {
         completionHandler(try illust_comments(illust_id: illust_id, offset: offset, include_total_comments: include_total_comments, req_auth: req_auth))
     }
     
