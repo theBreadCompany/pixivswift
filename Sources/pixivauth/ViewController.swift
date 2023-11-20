@@ -2,7 +2,7 @@
 //  ViewController.swift
 //  pixivauth
 //
-//  Created by Fabio Mauersberger on 28.05.22.
+//  Created by theBreadCompany on 28.05.22.
 //
 
 import AppKit

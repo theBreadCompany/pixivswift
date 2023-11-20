@@ -2,7 +2,7 @@
 //  utils.swift
 //  pixivswiftWrapper
 //
-//  Created by Fabio Mauersberger on 06.05.21.
+//  Created by theBreadCompany on 06.05.21.
 //
 
 import Foundation

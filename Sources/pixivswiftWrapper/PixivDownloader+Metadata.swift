@@ -2,7 +2,7 @@
 //  PixivDownloader+Metadata.swift
 //  
 //
-//  Created by Fabio Mauersberger on 15.07.22.
+//  Created by theBreadCompany on 15.07.22.
 //
 // TODO: Use a custom metadata section to store the full illustration metadata in the image
 

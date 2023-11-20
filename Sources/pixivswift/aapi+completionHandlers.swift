@@ -2,7 +2,7 @@
 //  api+completionHandlers.swift
 //  
 //
-//  Created by Fabio Mauersberger on 16.06.22.
+//  Created by theBreadCompany on 16.06.22.
 //
 
 import Foundation

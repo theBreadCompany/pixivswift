@@ -2,7 +2,7 @@
 //  PixivDownloader.swift
 //  pixivswiftWrapper
 //
-//  Created by Fabio Mauersberger on 16.04.21.
+//  Created by theBreadCompany on 16.04.21.
 //  Original work written in Python by https://github.com/Xdynix.
 //
 

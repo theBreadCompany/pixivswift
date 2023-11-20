@@ -2,7 +2,7 @@
 //  main.swift
 //  pixivauth
 //
-//  Created by Fabio Mauersberger on 30.05.22.
+//  Created by theBreadCompany on 30.05.22.
 //
 
 import Cocoa

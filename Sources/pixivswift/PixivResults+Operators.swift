@@ -2,7 +2,7 @@
 //  PixivResults+Operators.swift
 //  
 //
-//  Created by Fabio Mauersberger on 18.01.22.
+//  Created by theBreadCompany on 18.01.22.
 //
 
 import Foundation

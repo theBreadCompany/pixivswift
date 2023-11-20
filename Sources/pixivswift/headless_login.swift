@@ -2,7 +2,7 @@
 //  headless_login.swift
 //  pixivswift
 //
-//  Created by Fabio Mauersberger on 01.07.21.
+//  Created by theBreadCompany on 01.07.21.
 //  This is cursed and bad code.
 
 import Foundation
