@@ -100,7 +100,7 @@ public struct PixivIllustration: Codable {
         }
     }
     public var caption: String
-    public var illustAiType: Bool
+    public var illustAiType: Int // need to reverse to get actual enums
     public var illustBookStyle: Bool
 }
 
