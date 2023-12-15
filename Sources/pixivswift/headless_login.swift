@@ -6,14 +6,19 @@
 //  This is cursed and bad code.
 
 import Foundation
-
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 #if canImport(Erik)
 import Erik
 #endif
+#if os(macOS)
 import WebKit
 import CryptoKit
-import Foundation
 import CommonCrypto
+#else
+import Crypto
+#endif
 
 extension BasePixivAPI {
     
@@ -24,14 +29,18 @@ extension BasePixivAPI {
      */
     public func oauth_pkce() -> (String, String) {
         var keyData = Data(count: 32)
+#if os(macOS)
         let _ = keyData.withUnsafeMutableBytes { SecRandomCopyBytes(kSecRandomDefault, 32, $0.baseAddress!) }
-        
+#else
+        //var keyData = Data(SecureBytes(count: 32))
+#endif
         var code_verifier = keyData.base64EncodedString()
         code_verifier.removeLast()
         code_verifier = code_verifier.replacingOccurrences(of: "+", with: "-")
         code_verifier = code_verifier.replacingOccurrences(of: "/", with: "_")
         
         var code_challenge: String = { () -> Data in
+#if os(macOS)
             if #available(macOS 10.15, iOS 13, *) {
                 return Data(SHA256.hash(data: code_verifier.data(using: .ascii)!))
             } else {
@@ -41,6 +50,9 @@ extension BasePixivAPI {
                 }
                 return Data(hash)
             }
+#else
+            return Data(SHA256.hash(data: code_verifier.data(using: .ascii)!))
+#endif
         }().base64EncodedString()
         code_challenge.removeLast()
         code_challenge = code_challenge.replacingOccurrences(of: "+", with: "-")

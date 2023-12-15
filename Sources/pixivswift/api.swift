@@ -7,7 +7,9 @@
 //
 
 import Foundation
-
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 /**
  Class to be used by any API classes
  */
@@ -245,10 +247,9 @@ public class BasePixivAPI {
         return false
     }
     
-    internal func log(_ messages: CVarArg...) {
+    internal func log(_ messages: Any...) {
         #if DEBUG
-        let debugString = String(repeating: "%@", count: messages.count)
-        NSLog(debugString, messages)
+        print(messages)
         #endif
     }
 }

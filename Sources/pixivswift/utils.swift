@@ -6,8 +6,16 @@
 //
 
 import Foundation
-import CryptoKit
-import CommonCrypto
+#if canImport(FoundationNetworking)
+    import FoundationNetworking
+#endif
+#if canImport(CryptoKit)
+    import CryptoKit
+    import CommonCrypto
+#else 
+    import Crypto
+#endif
+
 
 /// `Error`s that may occur when (trying to) interface with pixiv
 public enum PixivError: Error {
@@ -39,6 +47,10 @@ public enum HttpMethod: String {
 
 extension String {
     var MD5: String {
+#if canImport(Crypto)
+        let computed = Insecure.MD5.hash(data: self.data(using: .utf8)!)
+        return computed.map { String(format: "%02hhx", $0) }.joined() 
+#else
         if #available(macOS 10.15,iOS 13, *) {
             let computed = Insecure.MD5.hash(data: self.data(using: .utf8)!)
             return computed.map { String(format: "%02hhx", $0) }.joined()
@@ -58,6 +70,7 @@ extension String {
                 $0 + String(format: "%02x", digest[$1])
             }
         }
+#endif
     }
 }
 
