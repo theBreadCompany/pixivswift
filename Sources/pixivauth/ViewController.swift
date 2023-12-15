@@ -5,6 +5,7 @@
 //  Created by theBreadCompany on 28.05.22.
 //
 
+#if os(macOS)
 import AppKit
 import WebKit
 import pixivswift
@@ -76,3 +77,4 @@ public class LoginHelper: NSObject {
         return URLRequest(url: url)
     }
 }
+#endif

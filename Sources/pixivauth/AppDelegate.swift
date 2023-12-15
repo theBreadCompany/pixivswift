@@ -4,7 +4,7 @@
 //
 //  Created by theBreadCompany on 28.05.22.
 //
-
+#if os(macOS)
 import AppKit
 
 //@main
@@ -32,3 +32,4 @@ class WindowDelegate: NSObject, NSWindowDelegate {
         NSApplication.shared.terminate(0)
     }
 }
+#endif
