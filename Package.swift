@@ -8,7 +8,7 @@ let package = Package(
     ],
     products: [
         .library(name: "pixivswift", targets: ["pixivswift"]),
-        //.library(name: "pixivswiftWrapper", targets: ["pixivswiftWrapper", "pixivswift"]),
+        .library(name: "pixivswiftWrapper", targets: ["pixivswiftWrapper", "pixivswift"]),
         .executable(name: "pixivauth", targets: ["pixivauth"])
     ],
     dependencies: [
@@ -16,7 +16,6 @@ let package = Package(
 //        .package(url: "https://github.com/maparoni/Zip.git", .revisionItem("059e7346082d02de16220cd79df7db18ddeba8c3"))
         .package(url: "https://github.com/weichsel/ZIPFoundation.git", .upToNextMajor(from: "0.9.0")),
         .package(url: "https://github.com/apple/swift-crypto.git", .upToNextMajor(from: "3.0.0")),
-        .package(url: "https://github.com/twostraws/swiftgd", .upToNextMajor(from: "2.0.0"))
     ],
     targets: [
         .target(
@@ -27,21 +26,21 @@ let package = Package(
             ],
             exclude: ["papi.swift"]
         ),
-//        .target(
-//            name: "pixivswiftWrapper",
-//            dependencies: ["pixivswift", "ZIPFoundation", .product(name: "SwiftGD", package: "swiftgd")]
-//        ),
+        .target(
+            name: "pixivswiftWrapper",
+            dependencies: ["pixivswift", "ZIPFoundation"]
+        ),
+        .target(
+            name: "pixivauth",
+            dependencies: ["pixivswift"]
+        ),
         .testTarget(
             name: "pixivswiftTests",
             dependencies: ["pixivswift"]
         ),
-//        .testTarget(
-//            name: "pixivswiftWrapperTests",
-//            dependencies: ["pixivswiftWrapper"]
-//        ),
-        .target(
-            name: "pixivauth",
-            dependencies: ["pixivswift"]
-        )
+        .testTarget(
+            name: "pixivswiftWrapperTests",
+            dependencies: ["pixivswiftWrapper"]
+        ),
     ]
 )

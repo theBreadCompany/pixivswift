@@ -9,7 +9,6 @@
 import Foundation
 import ZIPFoundation
 import pixivswift
-import QuartzCore
 
 private let TOKEN_LIFETIME = 2700
 
@@ -394,6 +393,7 @@ open class PixivDownloader {
     }
 }
 
+#if os(macOS)
 @available(macOS 10.15, iOS 13, *)
 extension PixivDownloader: ObservableObject {}
-
+#endif

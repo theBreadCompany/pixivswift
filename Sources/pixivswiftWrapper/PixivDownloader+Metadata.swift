@@ -7,7 +7,10 @@
 // TODO: Use a custom metadata section to store the full illustration metadata in the image
 
 import Foundation
+#if os(macOS)
 import ImageIO
+#else
+#endif
 import pixivswift
 
 #if canImport(UIKit)
@@ -27,6 +30,7 @@ extension PixivDownloader {
      - Parameter illust_data: Data object containing image data that should be update (illust_path is nescessary anyway as this function also writes the new data)
      */
     public func meta_update(metadata: PixivIllustration, illust_url: URL, illust_data: Data? = nil){
+#if os(macOS)
         let file_url: URL = illust_url
         let image: CGImageSource = illust_data != nil
         ? CGImageSourceCreateWithData(illust_data! as CFData, nil)!
@@ -70,21 +74,23 @@ extension PixivDownloader {
         let new_image = CGImageDestinationCreateWithURL(file_url as CFURL, img_type, CGImageSourceGetCount(image), nil)
         CGImageDestinationAddImageFromSource(new_image!, image, 0, properties as CFDictionary)
         CGImageDestinationFinalize(new_image!)
+#endif
     }
     
     /**
      Extract metadata from file
      
      - Parameter file: The URL to the source file
-     - Parameter identifyByFileName: Whether it should be tried to identify the image by the file name
+     - Parameter identifyByFileName: try to identify the image by the file name
      - returns: The extracted image identity or `nil` if the extraction failed
      
      identifyByFileName is kind of unsafe because the name can be changed and lost easily and may be considered unsafe.
      If it is allowed anyway and identification fails, all the other identification methods are tried as well.
      */
     public func metaExtract(from file: URL, identifyByFileName: Bool = false) -> PixivIllustration? {
+#if os(macOS)
         guard FileManager.default.fileExists(atPath: file.path), let source = CGImageSourceCreateWithURL(file as CFURL, nil) else { return nil }
-        
+#endif
         // The "unsafe" way: Check if the filename has the correct format to may be a pixiv illustration
         if identifyByFileName {
             let components = file.lastPathComponent.components(separatedBy: "_")
@@ -93,6 +99,7 @@ extension PixivDownloader {
             }
         }
         
+#if os(macOS)
         guard let properties = CGImageSourceCopyProperties(source, nil) as? Dictionary<String, Any>,
               let iptcData = properties["{IPTC}"] as? [String: Any] else { return nil }
         
@@ -104,5 +111,8 @@ extension PixivDownloader {
         } else {
             return try? self.illustration(illust_id: Int(url.lastPathComponent.components(separatedBy: "_").first ?? "") ?? 0)
         }
+#else
+        
+#endif
     }
 }
