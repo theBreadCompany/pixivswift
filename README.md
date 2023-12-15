@@ -12,6 +12,7 @@ Also, please do not overuse this. Pixiv has no financial benefit from this, and 
 - ~~Headless login~~for now, please use the [pixivauth executable target or build your own login process from it](https://github.com/thebreadcompany/pixivloader)
 - Access to ~~both the public API (deprecated) and~~ the API used by the Pixiv app 
 - Directly download images (although ugoiras (GIFs) require further handling, see below)
+- Embed the title, description, keywords etc. as IPTC metadata in the image (not on non-Apple platforms for now)
 
 ## Installation
 
@@ -30,9 +31,10 @@ The project is documented, everything can be found in Xcode's Developer Document
 ## TODO
 - write more tests
 - actually finally finish the fix for headless login
-- introduce a proper repo structure (like a dev branch) and version management (patches are always pushed without updating the tag, meaning clients using this pkg will have the bugs that are solved in HEAD (aaa))
+- introduce a proper repo structure (like a dev branch) and version management (patches are always pushed without updating the tag, meaning clients using this pkg might have the bugs that are solved in HEAD (aaa))
 - swiftify method and class/struct names
 - de-curse API methods (underlying request methods use dispatch semaphores in a cursed way, will fix that)
+- implement metadata integration for non-AppleOS by using external libs like exiv2
 
 ## Announcements
 I'll release a repo of an iOS/macOS app using this API soon.
