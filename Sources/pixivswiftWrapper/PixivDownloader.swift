@@ -10,6 +10,12 @@ import Foundation
 import ZIPFoundation
 import pixivswift
 
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+import GIF
+import SwiftGD
+#endif
+
 private let TOKEN_LIFETIME = 2700
 
 open class PixivDownloader {
@@ -342,6 +348,7 @@ open class PixivDownloader {
      - Parameter delay: delay between each frame of the GIF
      */
     private func zip_to_ugoira(zip: URL, destination: URL, delay: Int) {
+#if canImport(ImageIO)
         do {
             let unzipped_url = try self.unzip(zipURL: zip)
             
@@ -354,11 +361,13 @@ open class PixivDownloader {
         } catch {
             print(error.localizedDescription)
         }
+#endif
     }
     
     private func zip_to_ugoira(zip: URL, delay: Int) throws -> Data {
         let unzippedURL = try self.unzip(zipURL: zip)
         
+#if canImport(ImageIO)
         let imgData = Data() as! CFMutableData
         
         let gifDestination = CGImageDestinationCreateWithData(imgData, kUTTypeGIF, try FileManager().contentsOfDirectory(atPath: unzippedURL.path).count, [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]] as CFDictionary)
@@ -368,6 +377,15 @@ open class PixivDownloader {
         }
         CGImageDestinationFinalize(gifDestination!)
         return imgData as Data
+#else
+        let sortedSources = try FileManager().contentsOfDirectory(atPath: unzippedURL.path).sorted()
+        let first = Image(url: URL(fileURLWithPath: sortedSources.first!))
+        var gifDestination = GIF(quantizingImage: try! .init(pngData: first!.export()))
+        for i in 1..<sortedSources.count {
+            gifDestination.frames.append(.init(image:try! .init(pngData: Image(url: URL(fileURLWithPath: sortedSources[i]))!.export())))
+        }
+        return try gifDestination.encoded()
+#endif
     }
     
     /**
@@ -393,7 +411,6 @@ open class PixivDownloader {
     }
 }
 
-#if os(macOS)
-@available(macOS 10.15, iOS 13, *)
+#if canImport(Combine)
 extension PixivDownloader: ObservableObject {}
 #endif

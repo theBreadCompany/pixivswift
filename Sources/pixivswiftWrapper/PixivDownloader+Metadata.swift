@@ -7,11 +7,10 @@
 // TODO: Use a custom metadata section to store the full illustration metadata in the image
 
 import Foundation
-#if os(macOS)
-import ImageIO
-#else
-#endif
 import pixivswift
+#if canImport(ImageIO)
+import ImageIO
+#endif
 
 #if canImport(UIKit)
 let kUTTypePNG = "public.png" as CFString
@@ -30,7 +29,7 @@ extension PixivDownloader {
      - Parameter illust_data: Data object containing image data that should be update (illust_path is nescessary anyway as this function also writes the new data)
      */
     public func meta_update(metadata: PixivIllustration, illust_url: URL, illust_data: Data? = nil){
-#if os(macOS)
+#if canImport(ImageIO)
         let file_url: URL = illust_url
         let image: CGImageSource = illust_data != nil
         ? CGImageSourceCreateWithData(illust_data! as CFData, nil)!
@@ -88,7 +87,7 @@ extension PixivDownloader {
      If it is allowed anyway and identification fails, all the other identification methods are tried as well.
      */
     public func metaExtract(from file: URL, identifyByFileName: Bool = false) -> PixivIllustration? {
-#if os(macOS)
+#if canImport(ImageIO)
         guard FileManager.default.fileExists(atPath: file.path), let source = CGImageSourceCreateWithURL(file as CFURL, nil) else { return nil }
 #endif
         // The "unsafe" way: Check if the filename has the correct format to may be a pixiv illustration
@@ -99,7 +98,7 @@ extension PixivDownloader {
             }
         }
         
-#if os(macOS)
+#if canImport(ImageIO)
         guard let properties = CGImageSourceCopyProperties(source, nil) as? Dictionary<String, Any>,
               let iptcData = properties["{IPTC}"] as? [String: Any] else { return nil }
         
@@ -112,7 +111,7 @@ extension PixivDownloader {
             return try? self.illustration(illust_id: Int(url.lastPathComponent.components(separatedBy: "_").first ?? "") ?? 0)
         }
 #else
-        
+        return nil
 #endif
     }
 }

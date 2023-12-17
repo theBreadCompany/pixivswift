@@ -12,6 +12,5 @@ let delegate = AppDelegate()
 NSApplication.shared.delegate = delegate
 NSApplication.shared.run()
 #else
-import Foundation
-NSLog("Sorry, pixivauth is not available right now.")
+print("Sorry, pixivauth is not available on non-Apple platforms right now.")
 #endif
