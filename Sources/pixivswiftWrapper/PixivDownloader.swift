@@ -9,7 +9,9 @@
 import Foundation
 import ZIPFoundation
 import pixivswift
-
+#if canImport(ImageIO)
+import ImageIO
+#endif
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 import GIF
@@ -412,5 +414,6 @@ open class PixivDownloader {
 }
 
 #if canImport(Combine)
+@available(macOS 10.15, *)
 extension PixivDownloader: ObservableObject {}
 #endif
