@@ -109,6 +109,12 @@ extension PixivIllustration: Equatable {
     }
 }
 
+extension PixivIllustration: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.id)
+    }
+}
+
 extension UgoiraMetadata: Equatable {
     public static func == (lhs: UgoiraMetadata, rhs: UgoiraMetadata) -> Bool {
         return (try? JSONEncoder().encode(lhs)) ?? Data() == (try? JSONEncoder().encode(rhs)) ?? Data()

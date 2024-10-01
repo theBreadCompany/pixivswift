@@ -82,8 +82,10 @@ public class BasePixivAPI {
         let semaphore = DispatchSemaphore(value: 0)
         
         let task = URLSession.shared.dataTask(with: req ) { data, _, error in
-            guard let data = data, error == nil else { semaphore.signal(); return }
-            responseData = String(data: data, encoding: .utf8) ?? ""
+            if let data = data, error == nil {
+                // the warning about thread safety will have to stay until I've refactored this thing to use actual async syntax
+                responseData = String(data: data, encoding: .utf8) ?? ""
+            }
             semaphore.signal()
         }
         task.resume()
