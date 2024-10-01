@@ -77,8 +77,6 @@ public class BasePixivAPI {
             req.httpBody = components.url!.query!.data(using: .utf8)
         }
         
-        log("Request-URL ", queryURL.absoluteString)
-        
         var responseData: String = ""
         
         let semaphore = DispatchSemaphore(value: 0)
