@@ -14,7 +14,7 @@ let package = Package(
     dependencies: [
 //        .package(url: "https://github.com/phimage/Erik.git", from: "5.1.0"),
 //        .package(url: "https://github.com/maparoni/Zip.git", .revisionItem("059e7346082d02de16220cd79df7db18ddeba8c3"))
-        .package(url: "https://github.com/weichsel/ZIPFoundation.git", .upToNextMajor(from: "0.9.0"))
+        .package(url: "https://github.com/weichsel/ZIPFoundation.git", .revisionItem("fac78dfe5a886ad98e355ba98475b30b3753213a"))
     ],
     targets: [
         .target(
@@ -52,7 +52,7 @@ package.targets.first(where: {$0.name == "pixivswift"})!.dependencies.append(.pr
 #if !canImport(ImageIO)
 package.dependencies.append(contentsOf: [
     .package(url: "https://github.com/fwcd/swift-gif.git", .upToNextMajor(from: "2.0.0")),
-    .package(url: "https://github.com/twostraws/SwiftGD", .upToNextMajor(from: "2.0.0"))
+    .package(url: "https://github.com/twostraws/SwiftGD", .revisionItem("07650dcb343d5b045598459fd3aad0936e0259bf"))
 ])
 package.targets.first(where: {$0.name == "pixivswiftWrapper"})!.dependencies.append(contentsOf: [
     .product(name: "GIF", package: "swift-gif", condition: .when(platforms: [.linux])),
